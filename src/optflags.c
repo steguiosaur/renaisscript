@@ -1,0 +1,95 @@
+// optflags header implementation
+//
+// `optflags.c` handles option flags using getopt to parse through arguments
+// and set input and output files.
+//
+// See getopt(3) manual
+// https://man7.org/linux/man-pages/man3/getopt.3.html
+
+#include "optflags.h"
+#include <getopt.h>
+#include <stdio.h>
+
+const char *inputfile = NULL;  // access the specified file
+const char *outputfile = NULL; // output executable name
+
+static void displayVersionInfo() {
+    printf("Renaisscript compiler version 0.1.0\n");
+}
+
+static void displayHelpGuide() {
+    printf("Usage: renaisscript [option...] [rensfile...].rens\n"
+           "\n"
+           "  -o <filename>     write output to file\n"
+           "  -h                print this help guide\n"
+           "  -v                print version information\n"
+           "\n"
+           "Only one option flag must be specified.\n");
+}
+
+int parseOptionFlags(const int argc, char *argv[]) {
+    opterr = 0; // remove default getopt() error
+
+    while (1) {
+        // define flag options with and without argument
+        int flag = getopt(argc, argv, "o:vh");
+
+        // no option flags detected starting with '-'
+        if (flag == -1) {
+            break;
+        }
+
+        switch (flag) {
+        case 'o':
+            outputfile = optarg;
+            break;
+        case 'v':
+            displayVersionInfo();
+            return 0;
+        case 'h':
+            displayHelpGuide();
+            return 0;
+        default:
+            printf("[ERROR] option flag '-%c' undefined\n", optopt);
+            displayHelpGuide();
+            return 1;
+        }
+    }
+
+    // set outputfile to a.out if no '-o <fileout>' option specified
+    if (outputfile == NULL) {
+        outputfile = "a.out";
+    }
+
+    // no argument found after command or option '-o'
+    if (optind > argc - 1) {
+        printf("[ERROR] input file not found in arguments\n");
+        return 1;
+    }
+
+    // get only 1 file argument and fail if > 1
+    if (optind < argc - 1) {
+        printf("[ERROR] unparsed argument/s detected: ");
+        for (int i = optind + 1; i < argc; i++) {
+            printf("%s ", argv[i]);
+        }
+        printf("\n");
+        return 1;
+    }
+
+    // detect incomplete option flag
+    if (argv[optind][0] == '-') {
+        printf("[ERROR] incomplete option flag '%s' on argument %d\n",
+               argv[optind], optind);
+        return 1;
+    }
+
+    // assign single unparsed argument to inputfile
+    if (inputfile == NULL) {
+        inputfile = argv[optind];
+        return 0;
+    }
+
+    printf("[ERROR] uncaught error\n");
+    return 1;
+}
