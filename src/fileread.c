@@ -39,7 +39,7 @@ int getRensFileContents(const char *filename) {
     array_textdata = (char *)malloc(sizeof(char) * size);
 
     fseek(file_ptr, 0, SEEK_SET); // Reset file pointer to begin
-    // assign each character to array_textdata array
+    // assign each character to each array_textdata index
     for (size_t i = 0; i < size - 1; i++) {
         array_textdata[i] = (char)getc(file_ptr);
     }
