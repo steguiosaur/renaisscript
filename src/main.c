@@ -1,5 +1,5 @@
-#include "optflags.h"
-#include "fileread.h"
+#include "fileread.h" // char *array_textdata
+#include "optflags.h" // char *inputfile, *outputfile
 #include <stdio.h>
 
 int main(const int argc, char **argv) {
@@ -9,19 +9,25 @@ int main(const int argc, char **argv) {
     }
 
     // fileread.h - validate extension and get contents in file
-    if (getRensFileContents(inputfile)) {
-        return 1;
+    if (inputfile != NULL) {
+        if (getRensFileContents(inputfile)) {
+            return 1;
+        }
     }
 
-    // read inputfile
-    printf("Input File: %s\n", inputfile);
-    printf("Output File: %s\n", outputfile);
-    printf("%s", array_textdata);
+    // process inputfile's characters
+    if (array_textdata != NULL) {
+        // read inputfile
+        printf("Input File: %s\n", inputfile);
+        printf("Output File: %s\n", outputfile);
+        printf("%s", array_textdata);
+        // get tokens
 
-    // get tokens
+        // pass to lexer
+        
+        // free all memory
+        free(array_textdata);
+    }
 
-    // pass to lexer
-
-    freeTextdata();
     return 0;
 }
