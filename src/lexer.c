@@ -99,7 +99,7 @@ token_T* lexer_collect_id(lexer_T *lexer) {
     }
 
 
-    return init_token(TOKEN_STRING, value);
+    return init_token(TOKEN_ID, value);
 
 }
 
