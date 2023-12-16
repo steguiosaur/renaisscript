@@ -1,6 +1,9 @@
 #include "fileread.h" // char *array_textdata
 #include "optflags.h" // char *inputfile, *outputfile
+#include "lexer.h" // lexer_T* init_lexer
 #include <stdio.h>
+
+FILE* fp;
 
 int main(const int argc, char **argv) {
     // optflags.h - parse command line arguments
@@ -24,6 +27,14 @@ int main(const int argc, char **argv) {
         // get tokens
 
         // pass to lexer
+        lexer_T* lexer = init_lexer(array_textdata);
+        token_T* token = (void*)0;
+
+        fp = fopen("test/tokens.txt", "w");
+        while ((token = lexer_get_next_token(lexer)) != (void*)0) {
+            fprintf(fp, "TOKEN(%d, %s)\n", token->type, token->value);
+        }
+        fclose(fp);
         
         // free all memory
         free(array_textdata);
