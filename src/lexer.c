@@ -72,8 +72,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
             lexerReadNextChar(lexer);
             return tokenCreate(TK_EXPONENT, lexerGetLexAsString(lexer, curr_i));
         }
-        return tokenCreate(TK_ASTERISK,
-                           lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_ASTERISK, lexerGetLexAsString(lexer, curr_i));
     case '>':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);

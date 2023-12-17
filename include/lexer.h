@@ -76,13 +76,13 @@ typedef struct LexerStruct {
 // start lexical analysis
 Lexer *initLexer(const char *contents);
 
+// free lexer allocated memory
+void lexerCleanUp(Lexer **lexer);
+
 // iterate on lexer to get and create each token
 Token *lexerGetNextToken(Lexer *lexer);
 
-// free allocated memory token
+// free token allocated memory
 void tokenCleanup(Token **token);
-
-// free allocated memory lexer
-void lexerCleanUp(Lexer **lexer);
 
 #endif // LEXER_H_
