@@ -1,6 +1,7 @@
-count main() {
-    count x = 5;
-    if (3 != 4) {
+define count main() {
+    maketh count x = 5;
+
+    if (30 != 4) {
         sayeth("value not equal");
     } 
 
