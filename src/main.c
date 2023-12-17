@@ -23,28 +23,20 @@ int main(const int argc, char **argv) {
         printf("Output File: %s\n", outputfile);
         printf("%s", array_textdata);
 
-        Lexer *lexer = createLexer(array_textdata);
+        Lexer *lexer = initLexer(array_textdata);
 
-        printf("Tokenizing input:\n");
+        printf("Symbol Table:\n");
 
-        Token *tok = analyzeLexerNext(lexer);
+        Token *tok = lexerGetNextToken(lexer);
         while (tok->type != TK_EOF) {
-            if (tok->type == TK_IDENTIFIER || tok->type == TK_INTEGER) {
-                printf("Type: %d, Literal: %s\n", tok->type, tok->literal);
-            } else {
-                printf("Type: %d\n", tok->type);
-            }
 
-            cleanupToken(&tok);
-            tok = analyzeLexerNext(lexer);
+            printf("Type: %2d \tLexeme: %s\n", tok->type, tok->lexeme);
+
+            tokenCleanup(&tok);
+            tok = lexerGetNextToken(lexer);
         }
 
-        cleanupLexer(&lexer);
-        // get tokens
-
-        // pass to lexer
-
-        // free all memory
+        lexerCleanUp(&lexer);
         free(array_textdata);
     }
 

@@ -1,5 +1,10 @@
-Sample rens file
-\0
-\n
-\0
-sampe
+count main() {
+    count x = 5;
+    if (3 != 4) {
+        sayeth("value not equal");
+    } 
+
+    sayeth("Hello thy world");
+
+    returneth 0;
+}

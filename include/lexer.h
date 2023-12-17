@@ -1,11 +1,16 @@
-#ifndef _LEXER_H_
-#define _LEXER_H_
+// 'lexer.h' - holds token types and renaisscript lexical analyzer
 
+#ifndef LEXER_H_
+#define LEXER_H_
+
+// token types
 typedef enum {
     TK_ILLEGAL,
     TK_EOF,
     TK_IDENTIFIER,
-    TK_INTEGER,
+    TK_STRING,
+    TK_INT,
+    TK_INTLIT,
     TK_ASSIGN,
     TK_PLUS,
     TK_MINUS,
@@ -22,6 +27,8 @@ typedef enum {
     TK_RPAREN,
     TK_LCURLY,
     TK_RCURLY,
+    TK_OUT,
+    TK_IN,
     TK_FUNCTION,
     TK_LET,
     TK_TRUE,
@@ -31,18 +38,31 @@ typedef enum {
     TK_RETURN,
 } TokenType;
 
+// tokenizer
 typedef struct TokenStruct {
     TokenType type;
-    char *literal;
+    char *lexeme;
 } Token;
 
-typedef struct LexerStruct Lexer;
-Lexer *createLexer(const char *input);
+// lexical analyzer
+typedef struct LexerStruct {
+    const char *contents;
+    unsigned long content_length;
+    unsigned long index;
+    unsigned long read_index;
+    char ch;
+} Lexer;
 
-Token *analyzeLexerNext(Lexer *lexer);
-void cleanupLexer(Lexer **lexer);
+// start lexical analysis
+Lexer *initLexer(const char *contents);
 
-Token *createToken(TokenType type, char *literal);
-void cleanupToken(Token **token);
+// iterate on lexer to get and create each token
+Token *lexerGetNextToken(Lexer *lexer);
 
-#endif // _LEXER_H_
+// free allocated memory token
+void tokenCleanup(Token **token);
+
+// free allocated memory lexer
+void lexerCleanUp(Lexer **lexer);
+
+#endif // LEXER_H_

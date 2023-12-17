@@ -1,146 +1,134 @@
-#include <stdint.h>
-#include <stdio.h>
+#include "lexer.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "lexer.h"
+static Token *tokenCreate(TokenType type, char *lexeme);
 
-struct LexerStruct {
-    const char *input;
-    size_t input_length;
-    size_t position;
-    size_t read_position;
-    char ch;
-};
+static void lexerSkipWhitespace(Lexer *lexer);
+static void lexerReadNextChar(Lexer *lexer);
+static char lexerPeekNextChar(Lexer *lexer);
+static char *lexerGetCharAsString(Lexer *lexer);
+static const char *lexerReadIdentifier(Lexer *lexer, unsigned long *len);
+static const char *lexerReadInteger(Lexer *lexer, unsigned long *len);
 
-static void readLexerNextChar(Lexer *lexer);
-static char peekLexerNextChar(Lexer *lexer);
-static const char *readIdentifierLexer(Lexer *lexer, size_t *len);
-static const char *readIntegerLexer(Lexer *lexer, size_t *len);
+static unsigned long isLetter(char chr);
+static unsigned long isNumber(char chr);
 
-static uint8_t isLetter(char chr);
-static uint8_t isNumber(char chr);
+static TokenType lexerCollectKeyword(const char *ident, unsigned long len);
 
-static TokenType getTokenTypeFromLiteral(const char *literal, size_t len);
+// PUBLIC FUNCTIONS
 
-Lexer *createLexer(const char *input) {
-    size_t len = sizeof(Lexer);
-    Lexer *lexer = malloc(len);
-    memset(lexer, 0, len);
+Lexer *initLexer(const char *contents) {
+    Lexer *lexer = calloc(1, sizeof(Lexer));
 
-    lexer->input = input;
-    lexer->input_length = strlen(input);
-    lexer->position = 0;
-    lexer->read_position = 0;
+    lexer->contents = contents;
+    lexer->content_length = strlen(contents);
+    lexer->index = 0;
+    lexer->read_index = 0;
 
-    readLexerNextChar(lexer);
+    lexerReadNextChar(lexer);
 
     return lexer;
 }
 
-Token *analyzeLexerNext(Lexer *lexer) {
+Token *lexerGetNextToken(Lexer *lexer) {
     Token *tok = NULL;
 
-    // skip whitespace (space, tab, newline, carriage return)
-    while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
-           lexer->ch == '\r') {
-        readLexerNextChar(lexer);
-    }
+    lexerSkipWhitespace(lexer);
 
     switch (lexer->ch) {
     case '{':
-        tok = createToken(TK_LCURLY, NULL);
+        tok = tokenCreate(TK_LCURLY, lexerGetCharAsString(lexer));
         break;
     case '}':
-        tok = createToken(TK_RCURLY, NULL);
+        tok = tokenCreate(TK_RCURLY, lexerGetCharAsString(lexer));
         break;
     case '(':
-        tok = createToken(TK_LPAREN, NULL);
+        tok = tokenCreate(TK_LPAREN, lexerGetCharAsString(lexer));
         break;
     case ')':
-        tok = createToken(TK_RPAREN, NULL);
+        tok = tokenCreate(TK_RPAREN, lexerGetCharAsString(lexer));
         break;
     case ',':
-        tok = createToken(TK_COMMA, NULL);
+        tok = tokenCreate(TK_COMMA, lexerGetCharAsString(lexer));
         break;
     case ';':
-        tok = createToken(TK_SEMICOLON, NULL);
+        tok = tokenCreate(TK_SEMICOLON, lexerGetCharAsString(lexer));
         break;
     case '+':
-        tok = createToken(TK_PLUS, NULL);
+        tok = tokenCreate(TK_PLUS, lexerGetCharAsString(lexer));
         break;
     case '-':
-        tok = createToken(TK_MINUS, NULL);
+        tok = tokenCreate(TK_MINUS, lexerGetCharAsString(lexer));
         break;
     case '=':
-        if (peekLexerNextChar(lexer) == '=') {
-            readLexerNextChar(lexer);
-            tok = createToken(TK_EQUAL, NULL);
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            tok = tokenCreate(TK_EQUAL, lexerGetCharAsString(lexer));
         } else {
-            tok = createToken(TK_ASSIGN, NULL);
+            tok = tokenCreate(TK_ASSIGN, lexerGetCharAsString(lexer));
         }
         break;
     case '!':
-        if (peekLexerNextChar(lexer) == '=') {
-            readLexerNextChar(lexer);
-            tok = createToken(TK_NOTEQUAL, NULL);
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            tok = tokenCreate(TK_NOTEQUAL, lexerGetCharAsString(lexer));
         } else {
-            tok = createToken(TK_BANG, NULL);
+            tok = tokenCreate(TK_BANG, lexerGetCharAsString(lexer));
         }
         break;
     case '/':
-        tok = createToken(TK_SLASH, NULL);
+        tok = tokenCreate(TK_SLASH, lexerGetCharAsString(lexer));
         break;
     case '*':
-        tok = createToken(TK_ASTERISK, NULL);
+        tok = tokenCreate(TK_ASTERISK, lexerGetCharAsString(lexer));
         break;
     case '>':
-        tok = createToken(TK_GT, NULL);
+        tok = tokenCreate(TK_GT, lexerGetCharAsString(lexer));
         break;
     case '<':
-        tok = createToken(TK_LT, NULL);
+        tok = tokenCreate(TK_LT, lexerGetCharAsString(lexer));
         break;
     case '\0':
-        tok = createToken(TK_EOF, NULL);
+        tok = tokenCreate(TK_EOF, lexerGetCharAsString(lexer));
         break;
     default:
         break;
     }
 
     if (isLetter(lexer->ch)) {
-        size_t len = 0;
-        char *literal = NULL;
-        const char *ident = readIdentifierLexer(lexer, &len);
+        unsigned long len = 0;
+        char *lexeme = NULL;
+        const char *ident = lexerReadIdentifier(lexer, &len);
 
-        TokenType type = getTokenTypeFromLiteral(ident, len);
-        if (type == TK_IDENTIFIER) {
-            literal = strndup(ident, len);
-        }
+        TokenType type = lexerCollectKeyword(ident, len);
+        lexeme = strndup(ident, len);
 
-        tok = createToken(type, literal);
+        tok = tokenCreate(type, lexeme);
         return tok;
     }
 
     if (isNumber(lexer->ch)) {
-        size_t len = 0;
-        char *literal = NULL;
-        const char *ident = readIntegerLexer(lexer, &len);
+        unsigned long len = 0;
+        char *lexeme = NULL;
+        const char *ident = lexerReadInteger(lexer, &len);
 
-        literal = strndup(ident, len);
-        tok = createToken(TK_INTEGER, literal);
+        lexeme = strndup(ident, len);
+        tok = tokenCreate(TK_INTLIT, lexeme);
         return tok;
     }
 
     if (!tok) {
-        tok = createToken(TK_ILLEGAL, NULL);
+        tok = tokenCreate(TK_ILLEGAL, lexerGetCharAsString(lexer));
     }
 
-    readLexerNextChar(lexer);
+    lexerReadNextChar(lexer);
 
     return tok;
 }
 
-void cleanupLexer(Lexer **lexer) {
+void lexerCleanUp(Lexer **lexer) {
     if (*lexer) {
         free(*lexer);
     }
@@ -148,20 +136,9 @@ void cleanupLexer(Lexer **lexer) {
     *lexer = NULL;
 }
 
-Token *createToken(TokenType type, char *literal) {
-    size_t len = sizeof(Token);
-    Token *token = malloc(len);
-    memset(token, 0, len);
-
-    token->literal = literal;
-    token->type = type;
-
-    return token;
-}
-
-void cleanupToken(Token **token) {
-    if (*token && (*token)->literal) {
-        free((*token)->literal);
+void tokenCleanup(Token **token) {
+    if (*token && (*token)->lexeme) {
+        free((*token)->lexeme);
     }
 
     if (*token) {
@@ -171,87 +148,128 @@ void cleanupToken(Token **token) {
     *token = NULL;
 }
 
-static void readLexerNextChar(Lexer *lexer) {
-    if (lexer->read_position >= lexer->input_length) {
-        lexer->ch = '\0';
-    } else {
-        lexer->ch = lexer->input[lexer->read_position];
-    }
+// PRIVATE FUNCTIONS
 
-    lexer->position = lexer->read_position;
-    lexer->read_position++;
+static Token *tokenCreate(TokenType type, char *lexeme) {
+    Token *token = calloc(1, sizeof(Token));
+
+    token->lexeme = lexeme;
+    token->type = type;
+
+    return token;
 }
 
-static char peekLexerNextChar(Lexer *lexer) {
-    if (lexer->read_position >= lexer->input_length) {
-        return '\0';
+static char *lexerGetCharAsString(Lexer *lexer) {
+    char *str = calloc(1, sizeof(lexer->ch));
+
+    for (int i = 0; i == sizeof(lexer->ch) - 1; ++i) {
+        str[i] = lexer->ch;
     }
-    return lexer->input[lexer->read_position];
+
+    return str;
 }
 
-static const char *readIdentifierLexer(Lexer *lexer, size_t *len) {
-    char *result = NULL;
-    size_t position = lexer->position;
-
-    while (isLetter(lexer->ch)) {
-        readLexerNextChar(lexer);
-    }
-
-    if (len) {
-        *len = lexer->position - position;
-    }
-
-    return lexer->input + position;
-}
-
-static const char *readIntegerLexer(Lexer *lexer, size_t *len) {
-    char *result = NULL;
-    size_t position = lexer->position;
-
-    while (isNumber(lexer->ch)) {
-        readLexerNextChar(lexer);
-    }
-
-    if (len) {
-        *len = lexer->position - position;
-    }
-
-    return lexer->input + position;
-}
-
-static uint8_t isLetter(char chr) {
+static unsigned long isLetter(char chr) {
     return 'a' <= chr && chr <= 'z' || 'A' <= chr && chr <= 'Z' || chr == '_';
 }
 
-static uint8_t isNumber(char chr) { return '0' <= chr && '9' >= chr; }
+static unsigned long isNumber(char chr) { return '0' <= chr && '9' >= chr; }
 
-static TokenType getTokenTypeFromLiteral(const char *literal, size_t len) {
-    if (strncmp(literal, "let", len) == 0) {
+static void lexerSkipWhitespace(Lexer *lexer) {
+    while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
+           lexer->ch == '\r') {
+        lexerReadNextChar(lexer);
+    }
+}
+
+static void lexerReadNextChar(Lexer *lexer) {
+    if (lexer->read_index >= lexer->content_length) {
+        lexer->ch = '\0';
+    } else {
+        lexer->ch = lexer->contents[lexer->read_index];
+    }
+
+    lexer->index = lexer->read_index;
+    lexer->read_index++;
+}
+
+static char lexerPeekNextChar(Lexer *lexer) {
+    if (lexer->read_index >= lexer->content_length) {
+        return '\0';
+    }
+    return lexer->contents[lexer->read_index];
+}
+
+static const char *lexerReadIdentifier(Lexer *lexer, unsigned long *len) {
+    char *result = NULL;
+    unsigned long index = lexer->index;
+
+    while (isLetter(lexer->ch)) {
+        lexerReadNextChar(lexer);
+    }
+
+    if (len) {
+        *len = lexer->index - index;
+    }
+
+    return lexer->contents + index;
+}
+
+static const char *lexerReadInteger(Lexer *lexer, unsigned long *len) {
+    char *result = NULL;
+    unsigned long index = lexer->index;
+
+    while (isNumber(lexer->ch)) {
+        lexerReadNextChar(lexer);
+    }
+
+    if (len) {
+        *len = lexer->index - index;
+    }
+
+    return lexer->contents + index;
+}
+
+// detect if identifier is a reserved keyword
+static TokenType lexerCollectKeyword(const char *ident, unsigned long len) {
+    if (strncmp(ident, "maketh", len) == 0) {
         return TK_LET;
     }
 
-    if (strncmp(literal, "fn", len) == 0) {
+    if (strncmp(ident, "fn", len) == 0) {
         return TK_FUNCTION;
     }
 
-    if (strncmp(literal, "true", len) == 0) {
+    if (strncmp(ident, "yay", len) == 0) {
         return TK_TRUE;
     }
 
-    if (strncmp(literal, "false", len) == 0) {
+    if (strncmp(ident, "nay", len) == 0) {
         return TK_FALSE;
     }
 
-    if (strncmp(literal, "if", len) == 0) {
+    if (strncmp(ident, "if", len) == 0) {
         return TK_IF;
     }
 
-    if (strncmp(literal, "else", len) == 0) {
+    if (strncmp(ident, "else", len) == 0) {
         return TK_ELSE;
     }
 
-    if (strncmp(literal, "return", len) == 0) {
+    if (strncmp(ident, "returneth", len) == 0) {
         return TK_RETURN;
+    }
+
+    if (strncmp(ident, "sayeth", len) == 0) {
+        return TK_OUT;
+    }
+
+    if (strncmp(ident, "heareth", len) == 0) {
+        return TK_IN;
+    }
+
+    if (strncmp(ident, "count", len) == 0) {
+        return TK_INT;
     }
 
     return TK_IDENTIFIER;
