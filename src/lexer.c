@@ -46,7 +46,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
     case ',':
         return tokenCreate(TK_COMMA, lexerGetLexAsString(lexer, start_index));
     case ';':
-        return tokenCreate(TK_SEMICOLON, lexerGetLexAsString(lexer, start_index));
+        return tokenCreate(TK_SEMICOLON,
+                           lexerGetLexAsString(lexer, start_index));
+    case ':':
+        return tokenCreate(TK_COLON, lexerGetLexAsString(lexer, start_index));
     case '+':
         return tokenCreate(TK_PLUS, lexerGetLexAsString(lexer, start_index));
     case '-':
@@ -54,23 +57,54 @@ Token *lexerGetNextToken(Lexer *lexer) {
     case '=':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_EQUAL, lexerGetLexAsString(lexer, start_index));
+            return tokenCreate(TK_EQUAL,
+                               lexerGetLexAsString(lexer, start_index));
         }
         return tokenCreate(TK_ASSIGN, lexerGetLexAsString(lexer, start_index));
     case '!':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_NOTEQUAL, lexerGetLexAsString(lexer, start_index));
+            return tokenCreate(TK_NOTEQUAL,
+                               lexerGetLexAsString(lexer, start_index));
         }
         return tokenCreate(TK_BANG, lexerGetLexAsString(lexer, start_index));
     case '/':
         return tokenCreate(TK_SLASH, lexerGetLexAsString(lexer, start_index));
     case '*':
-        return tokenCreate(TK_ASTERISK, lexerGetLexAsString(lexer, start_index));
+        if (lexerPeekNextChar(lexer) == '*') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_EXPONENT,
+                               lexerGetLexAsString(lexer, start_index));
+        }
+        return tokenCreate(TK_ASTERISK,
+                           lexerGetLexAsString(lexer, start_index));
     case '>':
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_GEQUAL,
+                               lexerGetLexAsString(lexer, start_index));
+        }
         return tokenCreate(TK_GT, lexerGetLexAsString(lexer, start_index));
     case '<':
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_LEQUAL,
+                               lexerGetLexAsString(lexer, start_index));
+        }
         return tokenCreate(TK_LT, lexerGetLexAsString(lexer, start_index));
+    case '&':
+        if (lexerPeekNextChar(lexer) == '&') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_AND, lexerGetLexAsString(lexer, start_index));
+        }
+        return tokenCreate(TK_AMPERSAND,
+                           lexerGetLexAsString(lexer, start_index));
+    case '|':
+        if (lexerPeekNextChar(lexer) == '|') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_OR, lexerGetLexAsString(lexer, start_index));
+        }
+        break;
     case '\0':
         return tokenCreate(TK_EOF, lexerGetLexAsString(lexer, start_index));
     default:
@@ -169,7 +203,7 @@ static char lexerPeekNextChar(Lexer *lexer) {
 static char *lexerGetLexAsString(Lexer *lexer, const unsigned long start_idx) {
     const char *value = lexer->contents + start_idx;
     unsigned long len = lexer->index - start_idx + 1;
-    char* lexeme = strndup(value, len);
+    char *lexeme = strndup(value, len);
     return lexeme;
 }
 
@@ -219,6 +253,50 @@ static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len) {
 
     if (strncmp(ident, "count", len) == 0) {
         return TK_INT;
+    }
+
+    if (strncmp(ident, "glyph", len) == 0) {
+        return TK_CHAR;
+    }
+
+    if (strncmp(ident, "portion", len) == 0) {
+        return TK_FLOAT;
+    }
+
+    if (strncmp(ident, "fraction", len) == 0) {
+        return TK_DOUBLE;
+    }
+
+    if (strncmp(ident, "verdict", len) == 0) {
+        return TK_BOOL;
+    }
+
+    if (strncmp(ident, "nought", len) == 0) {
+        return TK_VOID;
+    }
+
+    if (strncmp(ident, "thither", len) == 0) {
+        return TK_GOTO;
+    }
+
+    if (strncmp(ident, "switch", len) == 0) {
+        return TK_SWITCH;
+    }
+
+    if (strncmp(ident, "case", len) == 0) {
+        return TK_CASE;
+    }
+
+    if (strncmp(ident, "cease", len) == 0) {
+        return TK_BREAK;
+    }
+
+    if (strncmp(ident, "rehearse", len) == 0) {
+        return TK_WHILE;
+    }
+
+    if (strncmp(ident, "persist", len) == 0) {
+        return TK_CONTINUE;
     }
 
     return TK_IDENTIFIER;
