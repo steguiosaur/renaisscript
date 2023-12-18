@@ -103,9 +103,13 @@ Token *lexerGetNextToken(Lexer *lexer) {
         break;
     }
 
+    // detect string literals
     if (lexer->ch == '"') {
         lexerReadNextChar(lexer);
         while (lexer->ch != '"') {
+            if (lexer->ch == '\\' && lexerPeekNextChar(lexer) == '"') {
+                lexerReadNextChar(lexer);
+            }
             lexerReadNextChar(lexer);
         }
 
