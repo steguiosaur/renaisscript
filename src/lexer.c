@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 static Token *tokenCreate(TokenType type, char *lexeme);
 
@@ -95,6 +96,30 @@ Token *lexerGetNextToken(Lexer *lexer) {
         if (lexerPeekNextChar(lexer) == '|') {
             lexerReadNextChar(lexer);
             return tokenCreate(TK_OR, lexerGetLexAsString(lexer, curr_i));
+        }
+        break;
+    case '#':
+        if(lexerPeekNextChar(lexer) == '#') {
+          lexerReadNextChar(lexer);
+
+          while (lexerPeekNextChar(lexer) != '#') {
+            lexerReadNextChar(lexer);
+          }
+          lexerReadNextChar(lexer);
+          
+          if (lexerPeekNextChar(lexer) == '#') {
+            lexerReadNextChar(lexer);
+          }
+
+          return tokenCreate(TK_COMMENT, lexerGetLexAsString(lexer, curr_i));
+
+        } else {
+
+          while (lexerPeekNextChar(lexer) != '\n') {
+            lexerReadNextChar(lexer);
+          }
+          return tokenCreate(TK_COMMENT, lexerGetLexAsString(lexer, curr_i));
+
         }
         break;
     case '\0':

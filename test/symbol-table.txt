@@ -5,6 +5,11 @@ TK_IDENTIFIER   main
 TK_LPAREN       (
 TK_RPAREN       )
 TK_LCURLY       {
+TK_COMMENT      # Single Line
+TK_COMMENT      ##
+    Double Line
+    Hello World
+    ##
 TK_LET          maketh
 TK_INT          count
 TK_IDENTIFIER   x
