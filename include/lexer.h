@@ -69,6 +69,7 @@ typedef struct LexerStruct {
     unsigned long content_length;
     unsigned long index;
     unsigned long read_index;
+    unsigned long line_number;
     char ch;
 } Lexer;
 
@@ -83,6 +84,8 @@ Token *lexerGetNextToken(Lexer *lexer);
 
 // free token allocated memory
 void tokenCleanup(Token **token);
+
+int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename);
 
 // for printing actual TokenType string
 static const char *const tk_map[] = {

@@ -24,6 +24,7 @@ Lexer *initLexer(const char *contents) {
     lexer->content_length = strlen(contents);
     lexer->index = 0;
     lexer->read_index = 0;
+    lexer->line_number = 1;
 
     return lexer;
 }
@@ -144,6 +145,24 @@ Token *lexerGetNextToken(Lexer *lexer) {
     return tokenCreate(TK_ILLEGAL, lexerGetLexAsString(lexer, curr_i));
 }
 
+int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
+    if (token->type == TK_ILLEGAL) {
+        printf("[ERROR]: InvalidToken: %s not recognized as token on %s "
+               "line %lu\n",
+               token->lexeme, filename, lexer->line_number);
+        return 1;
+    }
+
+    if (token->type == TK_ERR) {
+        printf("[ERROR]: UnterminatedString: unterminated string literal "
+               "reached EOF on %s line %lu\n",
+               filename, lexer->line_number);
+        return 1;
+    }
+    
+    return 0;
+}
+
 void lexerCleanUp(Lexer **lexer) {
     if (*lexer) {
         free(*lexer);
@@ -179,18 +198,24 @@ static Token *tokenCreate(TokenType type, char *lexeme) {
 static void lexerSkipWhitespace(Lexer *lexer) {
     while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
            lexer->ch == '\r' || lexer->ch == '#') {
+
+        // track current line number
+        if (lexer->ch == '\n') {
+            lexer->line_number++;
+        }
+
         // skip block line comment
         if (lexer->ch == '#' && lexerPeekNextChar(lexer) == '#') {
             lexerReadNextChar(lexer);
-            while (lexerPeekNextChar(lexer) != '#' 
-                && lexerPeekNextChar(lexer) != '\0') {
+            while (lexerPeekNextChar(lexer) != '#' &&
+                   lexerPeekNextChar(lexer) != '\0') {
                 lexerReadNextChar(lexer);
                 if (lexerPeekNextChar(lexer) == '#') {
                     lexerReadNextChar(lexer);
                 }
             }
             lexerReadNextChar(lexer);
-        } 
+        }
 
         // skip single line comment
         if (lexer->ch == '#') {

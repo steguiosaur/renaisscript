@@ -34,6 +34,14 @@ int main(const int argc, char **argv) {
 
             fprintf(symbol_file, "%-15s %-s\n", tk_map[tok->type], tok->lexeme);
 
+            if (lexerErrorHandler(lexer, tok, inputfile)) {
+                tokenCleanup(&tok);
+                lexerCleanUp(&lexer);
+                fclose(symbol_file);
+                cleanupTextData();
+                return 1;
+            }
+
             tokenCleanup(&tok);
             tok = lexerGetNextToken(lexer);
         }
