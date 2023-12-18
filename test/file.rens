@@ -6,8 +6,9 @@ define count main() {
     Hello World
     ##
 
-    maketh count x = 5;
+    maketh count x = 5; # another text to ignore
 
+    ####
     if (30 != 4) {
         sayeth("value not \n\r\t\v\\\'\"equal");
     } 

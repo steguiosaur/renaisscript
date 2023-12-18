@@ -97,30 +97,6 @@ Token *lexerGetNextToken(Lexer *lexer) {
             return tokenCreate(TK_OR, lexerGetLexAsString(lexer, curr_i));
         }
         break;
-    case '#':
-        if(lexerPeekNextChar(lexer) == '#') {
-          lexerReadNextChar(lexer);
-
-          while (lexerPeekNextChar(lexer) != '#') {
-            lexerReadNextChar(lexer);
-          }
-          lexerReadNextChar(lexer);
-          
-          if (lexerPeekNextChar(lexer) == '#') {
-            lexerReadNextChar(lexer);
-          }
-
-          return tokenCreate(TK_COMMENT, lexerGetLexAsString(lexer, curr_i));
-
-        } else {
-
-          while (lexerPeekNextChar(lexer) != '\n') {
-            lexerReadNextChar(lexer);
-          }
-          return tokenCreate(TK_COMMENT, lexerGetLexAsString(lexer, curr_i));
-
-        }
-        break;
     case '\0':
         return tokenCreate(TK_EOF, lexerGetLexAsString(lexer, curr_i));
     default:
@@ -199,9 +175,26 @@ static Token *tokenCreate(TokenType type, char *lexeme) {
     return token;
 }
 
+// comments are also skipped like whitespace
 static void lexerSkipWhitespace(Lexer *lexer) {
     while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
-           lexer->ch == '\r') {
+           lexer->ch == '\r' || lexer->ch == '#') {
+        // skip block line comment
+        if (lexer->ch == '#' && lexerPeekNextChar(lexer) == '#') {
+            lexerReadNextChar(lexer);
+            while (lexerPeekNextChar(lexer) != '#') {
+                lexerReadNextChar(lexer);
+            }
+            lexerReadNextChar(lexer);
+        } 
+
+        // skip single line comment
+        if (lexer->ch == '#') {
+            while (lexerPeekNextChar(lexer) != '\n') {
+                lexerReadNextChar(lexer);
+            }
+        }
+
         lexerReadNextChar(lexer);
     }
 }
@@ -226,7 +219,7 @@ static char lexerPeekNextChar(Lexer *lexer) {
     return lexer->contents[lexer->read_index];
 }
 
-// return ptr of tracked lexeme start and end index in lexer->contents 
+// return ptr of tracked lexeme start and end index in lexer->contents
 static char *lexerGetLexAsString(Lexer *lexer, const unsigned long curr_idx) {
     const char *value = lexer->contents + curr_idx;
     unsigned long len = lexer->index - curr_idx + 1;
