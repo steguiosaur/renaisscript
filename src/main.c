@@ -21,9 +21,9 @@ int main(const int argc, char **argv) {
     // process inputfile's characters
     if (array_textdata != NULL) {
         // read inputfile
-        printf("Input File: %s\n", inputfile);
-        printf("Output File: %s\n", outputfile);
-        printf("%s", array_textdata);
+        printf("[Input File]: %s\n", inputfile);
+        printf("[Output File]: %s\n", outputfile);
+        printf("[Source Code]\n%s", array_textdata);
 
         Lexer *lexer = initLexer(array_textdata);
 

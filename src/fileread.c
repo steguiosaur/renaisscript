@@ -44,7 +44,8 @@ int getRensFileContents(const char *filename) {
     (array_textdata)[size] = '\0';
 
     fclose(file_ptr);
-    return 0;}
+    return 0;
+}
 
 // free allocated array_textdata memory
 void cleanupTextData() { 

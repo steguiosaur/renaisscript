@@ -106,14 +106,18 @@ Token *lexerGetNextToken(Lexer *lexer) {
     // detect string literals
     if (lexer->ch == '"') {
         lexerReadNextChar(lexer);
-        while (lexer->ch != '"') {
+        while (lexer->ch != '"' && lexerPeekNextChar(lexer) != '\0') {
             if (lexer->ch == '\\' && lexerPeekNextChar(lexer) == '"') {
                 lexerReadNextChar(lexer);
             }
             lexerReadNextChar(lexer);
         }
 
-        return tokenCreate(TK_STRING, lexerGetLexAsString(lexer, curr_i));
+        if (lexerPeekNextChar(lexer) != '\0') {
+            return tokenCreate(TK_STRING, lexerGetLexAsString(lexer, curr_i));
+        }
+
+        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer, curr_i));
     }
 
     if (isValidIdentifier(lexer->ch)) {
