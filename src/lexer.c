@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 static Token *tokenCreate(TokenType type, char *lexeme);
 
