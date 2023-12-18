@@ -182,8 +182,12 @@ static void lexerSkipWhitespace(Lexer *lexer) {
         // skip block line comment
         if (lexer->ch == '#' && lexerPeekNextChar(lexer) == '#') {
             lexerReadNextChar(lexer);
-            while (lexerPeekNextChar(lexer) != '#') {
+            while (lexerPeekNextChar(lexer) != '#' 
+                && lexerPeekNextChar(lexer) != '\0') {
                 lexerReadNextChar(lexer);
+                if (lexerPeekNextChar(lexer) == '#') {
+                    lexerReadNextChar(lexer);
+                }
             }
             lexerReadNextChar(lexer);
         } 
