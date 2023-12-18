@@ -2,10 +2,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 static Token *tokenCreate(TokenType type, char *lexeme);
 
 static void lexerSkipWhitespace(Lexer *lexer);
+static void lexerSkipNextChar(Lexer *lexer);
 static void lexerReadNextChar(Lexer *lexer);
 static char lexerPeekNextChar(Lexer *lexer);
 static char *lexerGetLexAsString(Lexer *lexer, unsigned long curr_idx);
@@ -103,9 +105,29 @@ Token *lexerGetNextToken(Lexer *lexer) {
         break;
     }
 
+    // detect string literals
     if (lexer->ch == '"') {
         lexerReadNextChar(lexer);
         while (lexer->ch != '"') {
+            while (lexerPeekNextChar(lexer) == '\\') {
+                // If next character is a backslash (\), skip that
+                lexerSkipNextChar(lexer);
+
+                switch (lexerPeekNextChar(lexer)) {
+                    case 'n':
+                    case 'r':
+                    case 't':
+                    case 'v':
+                        lexerSkipNextChar(lexer);
+                        break;
+                    case '\\':
+                    case '\'':
+                    case '"':
+                        lexerReadNextChar(lexer);
+                        break;
+                        
+                }
+            }
             lexerReadNextChar(lexer);
         }
 
@@ -167,6 +189,11 @@ static Token *tokenCreate(TokenType type, char *lexeme) {
     return token;
 }
 
+static void lexerSkipNextChar(Lexer *lexer) {
+    lexer->index = lexer->read_index;
+    lexer->read_index++;
+}
+
 static void lexerSkipWhitespace(Lexer *lexer) {
     while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
            lexer->ch == '\r') {
@@ -184,6 +211,9 @@ static void lexerReadNextChar(Lexer *lexer) {
 
     lexer->index = lexer->read_index;
     lexer->read_index++;
+
+    // DEBUGGING PURPOSE, DELETE ON RELEASE
+    printf("%c", lexer->ch);
 }
 
 // view next char value in lexer

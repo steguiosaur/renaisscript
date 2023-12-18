@@ -2,7 +2,7 @@ define count main() {
     maketh count x = 5;
 
     if (30 != 4) {
-        sayeth("value not equal");
+        sayeth("value not \n\r\t\v\\\'\" equal");
     } 
 
     sayeth("Hello thy world");
