@@ -12,27 +12,19 @@
 
 const char *inputfile = NULL;  // access the specified file
 const char *outputfile = NULL; // output executable name
+const char *symboltbl = NULL;  // write symbol table to stdout
 
-static void displayVersionInfo() {
-    printf("Renaisscript compiler version 0.1.0\n");
-}
+static void displayVersionInfo();
+static void displayHelpGuide();
 
-static void displayHelpGuide() {
-    printf("Usage: renaisscript [option...] [rensfile...].rens\n"
-           "\n"
-           "  -o <filename>     write output to file\n"
-           "  -h                print this help guide\n"
-           "  -v                print version information\n"
-           "\n"
-           "Only one option flag must be specified.\n");
-}
+// PUBLIC FUNCTIONS
 
 int parseOptionFlags(const int argc, char *argv[]) {
     opterr = 0; // remove default getopt() error
 
     while (1) {
         // define flag options with and without argument
-        int flag = getopt(argc, argv, "o:vh");
+        int flag = getopt(argc, argv, "o:s:vh");
 
         // no option flags detected starting with '-'
         if (flag == -1) {
@@ -43,6 +35,8 @@ int parseOptionFlags(const int argc, char *argv[]) {
         case 'o':
             outputfile = optarg;
             break;
+        case 's':
+            symboltbl = optarg;
         case 'v':
             displayVersionInfo();
             return 0;
@@ -92,4 +86,21 @@ int parseOptionFlags(const int argc, char *argv[]) {
 
     printf("[ERROR] uncaught error\n");
     return 1;
+}
+
+// PRIVATE FUNCTIONS
+
+static void displayVersionInfo() {
+    printf("Renaisscript compiler version 0.1.0\n");
+}
+
+static void displayHelpGuide() {
+    printf("Usage: renaisscript [option...] [rensfile...].rens\n"
+           "\n"
+           "  -h                    print help guide and exit successfully\n"
+           "  -v                    print version and exit successfully\n"
+           "  -o <filename>         write output to file\n"
+           "  -s <filename>|stdout  print symbol table to stdout\n"
+           "\n"
+           "Report issues on github.com/steguiosaur/renaisscript/issues");
 }

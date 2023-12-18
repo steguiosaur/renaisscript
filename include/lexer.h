@@ -34,7 +34,6 @@ typedef enum {
     TK_RPAREN,
     TK_LCURLY,
     TK_RCURLY,
-
     TK_INT,
     TK_CHAR,
     TK_FLOAT,
@@ -84,5 +83,19 @@ Token *lexerGetNextToken(Lexer *lexer);
 
 // free token allocated memory
 void tokenCleanup(Token **token);
+
+// for printing actual TokenType string
+static const char *const tk_map[] = {
+    "TK_ILLEGAL", "TK_EOF",       "TK_COMMENT",  "TK_IDENTIFIER", "TK_STRING",
+    "TK_INTLIT",  "TK_AMPERSAND", "TK_AND",      "TK_OR",         "TK_BANG",
+    "TK_PLUS",    "TK_MINUS",     "TK_ASTERISK", "TK_EXPONENT",   "TK_SLASH",
+    "TK_ASSIGN",  "TK_EQUAL",     "TK_GT",       "TK_GEQUAL",     "TK_LT",
+    "TK_LEQUAL",  "TK_NOTEQUAL",  "TK_COMMA",    "TK_SEMICOLON",  "TK_COLON",
+    "TK_LPAREN",  "TK_RPAREN",    "TK_LCURLY",   "TK_RCURLY",     "TK_INT",
+    "TK_CHAR",    "TK_FLOAT",     "TK_DOUBLE",   "TK_BOOL",       "TK_VOID",
+    "TK_GOTO",    "TK_SWITCH",    "TK_CASE",     "TK_BREAK",      "TK_OUT",
+    "TK_IN",      "TK_FUNCTION",  "TK_LET",      "TK_TRUE",       "TK_FALSE",
+    "TK_IF",      "TK_ELSE",      "TK_WHILE",    "TK_CONTINUE",   "TK_RETURN",
+};
 
 #endif // LEXER_H_

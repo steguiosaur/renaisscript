@@ -1,6 +1,7 @@
 #include "fileread.h" // char *array_textdata
-#include "lexer.h"
-#include "optflags.h" // char *inputfile, *outputfile
+#include "lexer.h"       // lexical analyzer and tokens
+#include "optflags.h"    // char *inputfile, *outputfile
+
 #include <stdio.h>
 
 int main(const int argc, char **argv) {
@@ -16,6 +17,7 @@ int main(const int argc, char **argv) {
         }
     }
 
+    FILE *symbol_file = fopen("test/symbol-table.txt", "w");
     // process inputfile's characters
     if (array_textdata != NULL) {
         // read inputfile
@@ -25,19 +27,20 @@ int main(const int argc, char **argv) {
 
         Lexer *lexer = initLexer(array_textdata);
 
-        printf("Symbol Table:\n");
+        fprintf(symbol_file, "[TokenType - Lexeme] Symbol table\n");
 
         Token *tok = lexerGetNextToken(lexer);
         while (tok->type != TK_EOF) {
 
-            printf("Type: %2d \tLexeme: %s\n", tok->type, tok->lexeme);
+            fprintf(symbol_file, "%-15s %-s\n", tk_map[tok->type], tok->lexeme);
 
             tokenCleanup(&tok);
             tok = lexerGetNextToken(lexer);
         }
 
+        fclose(symbol_file);
         lexerCleanUp(&lexer);
-        free(array_textdata);
+        cleanupTextData();
     }
 
     return 0;

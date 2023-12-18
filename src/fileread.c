@@ -1,7 +1,7 @@
 // fileread header implementation
 //
-// `fileread.c` scans if file is the accepted extension file (*.rens || *.rn).
-// It also allocates memory for a dynamic array where the contents of the
+// `fileread.c` scans if file is the accepted extension file (*.rens ||
+// *.rn). It also allocates memory for a dynamic array where the contents of the
 // file is stored.
 //
 // Several references:
@@ -51,4 +51,9 @@ int getRensFileContents(const char *filename) {
 }
 
 // free allocated array_textdata memory
-void freeTextdata() { free(array_textdata); }
+void cleanupTextData() { 
+    if (array_textdata != NULL) {
+        free(array_textdata); 
+    }
+    array_textdata = NULL;
+}
