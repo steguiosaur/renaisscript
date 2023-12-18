@@ -1,4 +1,11 @@
 define count main() {
+
+    # Single Line
+    ##
+    Double Line
+    Hello World
+    ##
+
     maketh count x = 5;
 
     if (30 != 4) {
