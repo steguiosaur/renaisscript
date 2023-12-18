@@ -20,7 +20,7 @@ TK_RPAREN       )
 TK_LCURLY       {
 TK_OUT          sayeth
 TK_LPAREN       (
-TK_STRING       "value not \"equal\""
+TK_STRING       "value not \n\r\t\v\\\'\"equal"
 TK_RPAREN       )
 TK_SEMICOLON    ;
 TK_RCURLY       }

@@ -29,26 +29,22 @@ int getRensFileContents(const char *filename) {
         return 1;
     }
 
-    // determine length of characters in file
-    size_t size = 1;
-    while (getc(file_ptr) != EOF) {
-        size++;
+    fseek(file_ptr, 0, SEEK_END);
+    unsigned long size = ftell(file_ptr);
+    fseek(file_ptr, 0, SEEK_SET);
+
+    array_textdata = (char *)malloc(size + 1);
+    if (array_textdata == NULL) {
+        printf("[ERROR] Memory Allocation Failure\n");
+        fclose(file_ptr);
+        return 1;
     }
 
-    // create memory with sizeof file contents character length
-    array_textdata = (char *)malloc(sizeof(char) * size);
-
-    fseek(file_ptr, 0, SEEK_SET); // Reset file pointer to begin
-    // assign each character to each array_textdata index
-    for (size_t i = 0; i < size - 1; i++) {
-        array_textdata[i] = (char)getc(file_ptr);
-    }
-
-    array_textdata[size - 1] = '\0';
+    fread(array_textdata, 1, size, file_ptr);
+    (array_textdata)[size] = '\0';
 
     fclose(file_ptr);
-    return 0;
-}
+    return 0;}
 
 // free allocated array_textdata memory
 void cleanupTextData() { 
