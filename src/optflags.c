@@ -102,5 +102,5 @@ static void displayHelpGuide() {
            "  -o <filename>         write output to file\n"
            "  -s <filename>|stdout  print symbol table to stdout\n"
            "\n"
-           "Report issues on github.com/steguiosaur/renaisscript/issues");
+           "Report issues on github.com/steguiosaur/renaisscript/issues\n");
 }

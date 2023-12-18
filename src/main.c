@@ -38,8 +38,9 @@ int main(const int argc, char **argv) {
             tok = lexerGetNextToken(lexer);
         }
 
-        fclose(symbol_file);
+        tokenCleanup(&tok);
         lexerCleanUp(&lexer);
+        fclose(symbol_file);
         cleanupTextData();
     }
 
