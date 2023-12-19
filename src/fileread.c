@@ -7,6 +7,8 @@
 // Several references:
 // https://stackoverflow.com/questions/54943083
 
+#include "fileread.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +16,6 @@
 char *array_textdata = NULL; // access file character array
 
 int getRensFileContents(const char *filename) {
-
     // detect rens or rn file extension
     if (!(strstr(filename, ".rens") || strstr(filename, ".rn"))) {
         printf("[ERROR] FileNotSupported: unrecognized file extension '%s'\n",
@@ -29,10 +30,12 @@ int getRensFileContents(const char *filename) {
         return 1;
     }
 
+    // set array size to be allocated on heap via length of chars in file
     fseek(file_ptr, 0, SEEK_END);
     unsigned long size = ftell(file_ptr);
     fseek(file_ptr, 0, SEEK_SET);
 
+    // allocate memory for array
     array_textdata = (char *)malloc(size + 1);
     if (array_textdata == NULL) {
         printf("[ERROR] Memory Allocation Failure\n");
@@ -40,6 +43,7 @@ int getRensFileContents(const char *filename) {
         return 1;
     }
 
+    // put all characters in file to the array
     fread(array_textdata, 1, size, file_ptr);
     (array_textdata)[size] = '\0';
 

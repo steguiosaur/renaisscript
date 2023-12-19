@@ -1,3 +1,5 @@
+// 'lexer.c' - lexical analyzer functionalities
+
 #include "lexer.h"
 
 #include <stdlib.h>
@@ -15,8 +17,9 @@ static int isValidNumber(char chr);
 
 static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len);
 
-// PUBLIC FUNCTIONS
+/// PUBLIC FUNCTIONS
 
+// start lexical analysis
 Lexer *initLexer(const char *contents) {
     Lexer *lexer = calloc(1, sizeof(Lexer));
 
@@ -29,6 +32,7 @@ Lexer *initLexer(const char *contents) {
     return lexer;
 }
 
+// iterate lexer to create and return tokens (tokenization and classification)
 Token *lexerGetNextToken(Lexer *lexer) {
     lexerReadNextChar(lexer);
     lexerSkipWhitespace(lexer);
@@ -121,6 +125,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
         return tokenCreate(TK_ERR, lexerGetLexAsString(lexer, curr_i));
     }
 
+    // detect identifier and keyword types
     if (isValidIdentifier(lexer->ch)) {
         while (isValidIdentifier(lexerPeekNextChar(lexer))) {
             lexerReadNextChar(lexer);
@@ -134,6 +139,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
         return tokenCreate(type, lexeme);
     }
 
+    // detect integer literals
     if (isValidNumber(lexer->ch)) {
         while (isValidNumber(lexerPeekNextChar(lexer))) {
             lexerReadNextChar(lexer);
@@ -145,17 +151,18 @@ Token *lexerGetNextToken(Lexer *lexer) {
     return tokenCreate(TK_ILLEGAL, lexerGetLexAsString(lexer, curr_i));
 }
 
+// pass tokens here to filter TK_ERR and TK_ILLEGAL types
 int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
     if (token->type == TK_ILLEGAL) {
-        printf("[ERROR]: InvalidToken: %s not recognized as token on %s "
-               "line %lu\n",
+        printf("[ERROR] InvalidToken: %s not recognized as token on %s "
+               "line:%lu\n",
                token->lexeme, filename, lexer->line_number);
         return 1;
     }
 
     if (token->type == TK_ERR) {
-        printf("[ERROR]: UnterminatedString: unterminated string literal "
-               "reached EOF on %s line %lu\n",
+        printf("[ERROR] UnterminatedString: unterminated string literal "
+               "reached EOF on %s line:%lu\n",
                filename, lexer->line_number);
         return 1;
     }
@@ -163,6 +170,7 @@ int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
     return 0;
 }
 
+// free lexer allocated memory
 void lexerCleanUp(Lexer **lexer) {
     if (*lexer) {
         free(*lexer);
@@ -171,6 +179,7 @@ void lexerCleanUp(Lexer **lexer) {
     *lexer = NULL;
 }
 
+// free token allocated memory
 void tokenCleanup(Token **token) {
     if (*token && (*token)->lexeme) {
         free((*token)->lexeme);
@@ -183,8 +192,9 @@ void tokenCleanup(Token **token) {
     *token = NULL;
 }
 
-// PRIVATE FUNCTIONS
+/// PRIVATE FUNCTIONS
 
+// token builder (to be used by parser or syntax analyzer)
 static Token *tokenCreate(TokenType type, char *lexeme) {
     Token *token = calloc(1, sizeof(Token));
 
@@ -194,7 +204,7 @@ static Token *tokenCreate(TokenType type, char *lexeme) {
     return token;
 }
 
-// comments are also skipped like whitespace
+// skip whitespaces, unneeded file escape sequences, and comments
 static void lexerSkipWhitespace(Lexer *lexer) {
     while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
            lexer->ch == '\r' || lexer->ch == '#') {
@@ -228,7 +238,7 @@ static void lexerSkipWhitespace(Lexer *lexer) {
     }
 }
 
-// access next value char in lexer
+// access next char value in lexer
 static void lexerReadNextChar(Lexer *lexer) {
     if (lexer->read_index >= lexer->content_length) {
         lexer->ch = '\0';
@@ -262,7 +272,7 @@ static int isValidIdentifier(const char chr) {
 
 static int isValidNumber(const char chr) { return '0' <= chr && '9' >= chr; }
 
-// detect if given identifier is a reserved keyword
+// detect if given identifier is a reserved keyword and return the type
 static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len) {
     if (strncmp(ident, "maketh", len) == 0) {
         return TK_LET;

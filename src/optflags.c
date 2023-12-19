@@ -7,6 +7,7 @@
 // https://man7.org/linux/man-pages/man3/getopt.3.html
 
 #include "optflags.h"
+
 #include <getopt.h>
 #include <stdio.h>
 
@@ -17,7 +18,7 @@ const char *symboltbl = NULL;  // write symbol table to stdout
 static void displayVersionInfo();
 static void displayHelpGuide();
 
-// PUBLIC FUNCTIONS
+/// PUBLIC FUNCTIONS
 
 int parseOptionFlags(const int argc, char *argv[]) {
     opterr = 0; // remove default getopt() error
@@ -88,7 +89,7 @@ int parseOptionFlags(const int argc, char *argv[]) {
     return 1;
 }
 
-// PRIVATE FUNCTIONS
+/// PRIVATE FUNCTIONS
 
 static void displayVersionInfo() {
     printf("Renaisscript compiler version 0.1.0\n");

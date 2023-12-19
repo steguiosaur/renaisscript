@@ -57,13 +57,11 @@ typedef enum {
     TK_RETURN,
 } TokenType;
 
-// tokenizer
 typedef struct TokenStruct {
     TokenType type;
     char *lexeme;
 } Token;
 
-// lexical analyzer
 typedef struct LexerStruct {
     const char *contents;
     unsigned long content_length;
@@ -79,12 +77,13 @@ Lexer *initLexer(const char *contents);
 // free lexer allocated memory
 void lexerCleanUp(Lexer **lexer);
 
-// iterate on lexer to get and create each token
+// iterate lexer to create and return tokens (tokenization and classification)
 Token *lexerGetNextToken(Lexer *lexer);
 
 // free token allocated memory
 void tokenCleanup(Token **token);
 
+// pass tokens here to filter TK_ERR and TK_ILLEGAL types
 int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename);
 
 // for printing actual TokenType string
