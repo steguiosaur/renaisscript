@@ -4,7 +4,7 @@ TK_INT          count
 TK_IDENTIFIER   main
 TK_LPAREN       (
 TK_RPAREN       )
-TK_RBRACKET     {
+TK_LCURLY       {
 TK_LET          maketh
 TK_INT          count
 TK_IDENTIFIER   x
@@ -20,7 +20,7 @@ TK_INTLIT       30
 TK_NOTEQUAL     !=
 TK_INTLIT       4
 TK_RPAREN       )
-TK_RBRACKET     {
+TK_LCURLY       {
 TK_OUT          sayeth
 TK_LPAREN       (
 TK_STRING       "value not \n\r\t\v\\\'\"equal"
