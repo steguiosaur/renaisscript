@@ -11,4 +11,4 @@ extern char *array_textdata;
 extern int getRensFileContents(const char *filename);
 
 // free allocated array_textdata memory
-extern void freeTextdata();
+void cleanupTextData();
