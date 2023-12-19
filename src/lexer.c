@@ -11,7 +11,7 @@ static Token *tokenCreate(TokenType type, char *lexeme);
 static void lexerSkipWhitespace(Lexer *lexer);
 static void lexerReadNextChar(Lexer *lexer);
 static char lexerPeekNextChar(Lexer *lexer);
-static char *lexerGetLexAsString(Lexer *lexer, unsigned long curr_idx);
+static char *lexerGetLexAsString(Lexer *lexer);
 
 static int isValidIdentifier(char chr);
 static int isValidNumber(char chr);
@@ -38,99 +38,99 @@ Token *lexerGetNextToken(Lexer *lexer) {
     lexerReadNextChar(lexer);
     lexerSkipWhitespace(lexer);
 
-    const unsigned long curr_i = lexer->index; // track current index
+    lexer->index = lexer->read_index - 1; // mark token starting index
 
     switch (lexer->ch) {
     case '{':
-        return tokenCreate(TK_LCURLY, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_LCURLY, lexerGetLexAsString(lexer));
     case '}':
-        return tokenCreate(TK_RCURLY, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_RCURLY, lexerGetLexAsString(lexer));
     case '(':
-        return tokenCreate(TK_LPAREN, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_LPAREN, lexerGetLexAsString(lexer));
     case ')':
-        return tokenCreate(TK_RPAREN, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_RPAREN, lexerGetLexAsString(lexer));
     case '[':
-        return tokenCreate(TK_LBRACKET, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_LBRACKET, lexerGetLexAsString(lexer));
     case ']':
-        return tokenCreate(TK_RBRACKET, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_RBRACKET, lexerGetLexAsString(lexer));
     case ',':
-        return tokenCreate(TK_COMMA, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_COMMA, lexerGetLexAsString(lexer));
     case ';':
-        return tokenCreate(TK_SEMICOLON, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_SEMICOLON, lexerGetLexAsString(lexer));
     case ':':
-        return tokenCreate(TK_COLON, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_COLON, lexerGetLexAsString(lexer));
     case '%':
-        return tokenCreate(TK_MODULO, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_MODULO, lexerGetLexAsString(lexer));
     case '+':
         if (lexerPeekNextChar(lexer) == '+') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_INCREMENT, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_INCREMENT, lexerGetLexAsString(lexer));
         }
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_ASSIGNINC, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_ASSIGNINC, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_PLUS, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_PLUS, lexerGetLexAsString(lexer));
     case '-':
         if (lexerPeekNextChar(lexer) == '-') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_DECREMENT, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_DECREMENT, lexerGetLexAsString(lexer));
         }
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_ASSIGNDEC, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_ASSIGNDEC, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_MINUS, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_MINUS, lexerGetLexAsString(lexer));
     case '=':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_EQUAL, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_EQUAL, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_ASSIGN, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_ASSIGN, lexerGetLexAsString(lexer));
     case '!':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_NOTEQUAL, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_NOTEQUAL, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_BANG, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_BANG, lexerGetLexAsString(lexer));
     case '/':
         if (lexerPeekNextChar(lexer) == '/') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_FLOORDIV, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_FLOORDIV, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_SLASH, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_SLASH, lexerGetLexAsString(lexer));
     case '*':
         if (lexerPeekNextChar(lexer) == '*') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_EXPONENT, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_EXPONENT, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_ASTERISK, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_ASTERISK, lexerGetLexAsString(lexer));
     case '>':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_GEQUAL, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_GEQUAL, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_GT, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_GT, lexerGetLexAsString(lexer));
     case '<':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_LEQUAL, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_LEQUAL, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_LT, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_LT, lexerGetLexAsString(lexer));
     case '&':
         if (lexerPeekNextChar(lexer) == '&') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_AND, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_AND, lexerGetLexAsString(lexer));
         }
-        return tokenCreate(TK_AMPERSAND, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_AMPERSAND, lexerGetLexAsString(lexer));
     case '|':
         if (lexerPeekNextChar(lexer) == '|') {
             lexerReadNextChar(lexer);
-            return tokenCreate(TK_OR, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_OR, lexerGetLexAsString(lexer));
         }
         break;
     case '\0':
-        return tokenCreate(TK_EOF, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_EOF, lexerGetLexAsString(lexer));
     default:
         break;
     }
@@ -146,10 +146,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
         }
 
         if (lexerPeekNextChar(lexer) != '\0') {
-            return tokenCreate(TK_STRING, lexerGetLexAsString(lexer, curr_i));
+            return tokenCreate(TK_STRING, lexerGetLexAsString(lexer));
         }
 
-        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
     }
 
     // detect identifier and keyword types
@@ -158,8 +158,8 @@ Token *lexerGetNextToken(Lexer *lexer) {
             lexerReadNextChar(lexer);
         }
 
-        const char *value = lexer->contents + curr_i;
-        unsigned long len = lexer->index - curr_i + 1;
+        const char *value = lexer->contents + lexer->index;
+        unsigned long len = lexer->read_index - lexer->index;
         char *lexeme = strndup(value, len);
 
         TokenType type = lexerIdReservedKeyword(value, len);
@@ -172,10 +172,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
             lexerReadNextChar(lexer);
         }
 
-        return tokenCreate(TK_INTLIT, lexerGetLexAsString(lexer, curr_i));
+        return tokenCreate(TK_INTLIT, lexerGetLexAsString(lexer));
     }
 
-    return tokenCreate(TK_ILLEGAL, lexerGetLexAsString(lexer, curr_i));
+    return tokenCreate(TK_ILLEGAL, lexerGetLexAsString(lexer));
 }
 
 // pass tokens here to filter TK_ERR and TK_ILLEGAL types
@@ -193,7 +193,7 @@ int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
                filename, lexer->line_number);
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -273,7 +273,6 @@ static void lexerReadNextChar(Lexer *lexer) {
         lexer->ch = lexer->contents[lexer->read_index];
     }
 
-    lexer->index = lexer->read_index;
     lexer->read_index++;
 }
 
@@ -285,10 +284,10 @@ static char lexerPeekNextChar(Lexer *lexer) {
     return lexer->contents[lexer->read_index];
 }
 
-// return ptr of tracked lexeme start and end index in lexer->contents
-static char *lexerGetLexAsString(Lexer *lexer, const unsigned long curr_idx) {
-    const char *value = lexer->contents + curr_idx;
-    unsigned long len = lexer->index - curr_idx + 1;
+// return ptr of tracked lexeme index and end read_index in lexer->contents
+static char *lexerGetLexAsString(Lexer *lexer) {
+    const char *value = lexer->contents + lexer->index;
+    unsigned long len = lexer->read_index - lexer->index;
     char *lexeme = strndup(value, len);
     return lexeme;
 }
