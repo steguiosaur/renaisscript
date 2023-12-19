@@ -48,15 +48,37 @@ Token *lexerGetNextToken(Lexer *lexer) {
         return tokenCreate(TK_LPAREN, lexerGetLexAsString(lexer, curr_i));
     case ')':
         return tokenCreate(TK_RPAREN, lexerGetLexAsString(lexer, curr_i));
+    case '[':
+        return tokenCreate(TK_LBRACKET, lexerGetLexAsString(lexer, curr_i));
+    case ']':
+        return tokenCreate(TK_RBRACKET, lexerGetLexAsString(lexer, curr_i));
     case ',':
         return tokenCreate(TK_COMMA, lexerGetLexAsString(lexer, curr_i));
     case ';':
         return tokenCreate(TK_SEMICOLON, lexerGetLexAsString(lexer, curr_i));
     case ':':
         return tokenCreate(TK_COLON, lexerGetLexAsString(lexer, curr_i));
+    case '%':
+        return tokenCreate(TK_MODULO, lexerGetLexAsString(lexer, curr_i));
     case '+':
+        if (lexerPeekNextChar(lexer) == '+') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_INCREMENT, lexerGetLexAsString(lexer, curr_i));
+        }
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_ASSIGNINC, lexerGetLexAsString(lexer, curr_i));
+        }
         return tokenCreate(TK_PLUS, lexerGetLexAsString(lexer, curr_i));
     case '-':
+        if (lexerPeekNextChar(lexer) == '-') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_DECREMENT, lexerGetLexAsString(lexer, curr_i));
+        }
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_ASSIGNDEC, lexerGetLexAsString(lexer, curr_i));
+        }
         return tokenCreate(TK_MINUS, lexerGetLexAsString(lexer, curr_i));
     case '=':
         if (lexerPeekNextChar(lexer) == '=') {
@@ -71,6 +93,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
         }
         return tokenCreate(TK_BANG, lexerGetLexAsString(lexer, curr_i));
     case '/':
+        if (lexerPeekNextChar(lexer) == '/') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_FLOORDIV, lexerGetLexAsString(lexer, curr_i));
+        }
         return tokenCreate(TK_SLASH, lexerGetLexAsString(lexer, curr_i));
     case '*':
         if (lexerPeekNextChar(lexer) == '*') {
