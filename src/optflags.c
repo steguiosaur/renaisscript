@@ -13,7 +13,7 @@
 
 const char *inputfile = NULL;  // access the specified file
 const char *outputfile = NULL; // output executable name
-const char *symboltbl = NULL;  // write symbol table to stdout
+const char *symbolfile = NULL;  // write symbol table to stdout
 
 static void displayVersionInfo();
 static void displayHelpGuide();
@@ -37,7 +37,8 @@ int parseOptionFlags(const int argc, char *argv[]) {
             outputfile = optarg;
             break;
         case 's':
-            symboltbl = optarg;
+            symbolfile = optarg;
+            break;
         case 'v':
             displayVersionInfo();
             return 0;
@@ -98,10 +99,10 @@ static void displayVersionInfo() {
 static void displayHelpGuide() {
     printf("Usage: renaisscript [option...] [rensfile...].rens\n"
            "\n"
-           "  -h                    print help guide and exit successfully\n"
-           "  -v                    print version and exit successfully\n"
-           "  -o <filename>         write output to file\n"
-           "  -s <filename>|stdout  print symbol table to stdout\n"
+           "  -h                print help guide and exit successfully\n"
+           "  -v                print version and exit successfully\n"
+           "  -o <filename>     write output to file\n"
+           "  -s <filename>     write symbol table to file\n"
            "\n"
            "Report issues on github.com/steguiosaur/renaisscript/issues\n");
 }

@@ -4,11 +4,21 @@
 // It also allocates memory for a dynamic array where the contents of the
 // file is stored.
 
-// access the file contents with 'array_textdata'
-extern char *array_textdata;
+// access the file contents with 'file_contents'
+extern char *file_contents;
+extern char *str_out; // store symbol table
 
-// detect file extension (*.rens || *.rn) and store values to 'array_textdata'
+// detect file extension (*.rens || *.rn) and store values to 'file_contents'
 extern int getRensFileContents(const char *filename);
 
-// free allocated array_textdata memory
-void cleanupTextData();
+// free allocated file_contents memory
+void cleanupFileContents();
+
+// continously collect token and lexeme strings on lexer
+void collectStringOutput(const char *tok_name, char *lexeme);
+
+// write collected strings from str_out to file
+int storeCollectedStringOutput(const char *filename);
+
+// free allocated str_out memory
+void cleanupCollectedString();

@@ -1,6 +1,6 @@
-#include "fileread.h" // char *array_textdata
-#include "lexer.h"       // lexical analyzer and tokens
-#include "optflags.h"    // char *inputfile, *outputfile
+#include "fileread.h" // char *file_contents
+#include "lexer.h"    // lexical analyzer and tokens
+#include "optflags.h" // char *inputfile, *outputfile
 
 #include <stdio.h>
 
@@ -17,39 +17,40 @@ int main(const int argc, char **argv) {
         }
     }
 
-    FILE *symbol_file = fopen("test/symbol-table.txt", "w");
     // process inputfile's characters
-    if (array_textdata != NULL) {
-        // // read inputfile
-        // printf("[Input File]: %s\n", inputfile);
-        // printf("[Output File]: %s\n", outputfile);
-        // printf("[Source Code]\n%s", array_textdata);
-
-        Lexer *lexer = initLexer(array_textdata);
-
-        fprintf(symbol_file, "[TokenType - Lexeme] Symbol table\n");
+    if (file_contents != NULL) {
+        Lexer *lexer = initLexer(file_contents);
 
         Token *tok = lexerGetNextToken(lexer);
         while (tok->type != TK_EOF) {
 
-            fprintf(symbol_file, "%-15s %-s\n", tk_map[tok->type], tok->lexeme);
-
+            // print error and exit fail if token type ERR and INVALID detected
             if (lexerErrorHandler(lexer, tok, inputfile)) {
                 tokenCleanup(&tok);
                 lexerCleanUp(&lexer);
-                fclose(symbol_file);
-                cleanupTextData();
+                cleanupCollectedString();
+                cleanupFileContents();
                 return 1;
+            }
+
+            // for symbol table file output
+            if (symbolfile != NULL) {
+                collectStringOutput(tk_map[tok->type], tok->lexeme);
             }
 
             tokenCleanup(&tok);
             tok = lexerGetNextToken(lexer);
         }
 
+        // write symbol table on specified symbol file in arguments
+        if (symbolfile != NULL) {
+            storeCollectedStringOutput(symbolfile);
+        }
+
         tokenCleanup(&tok);
         lexerCleanUp(&lexer);
-        fclose(symbol_file);
-        cleanupTextData();
+        cleanupCollectedString();
+        cleanupFileContents();
     }
 
     return 0;
