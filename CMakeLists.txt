@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 17)
 
 # Default build type to Release
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+  set(CMAKE_BUILD_TYPE MinSizeRel)
 endif()
 
 # Speed up compilation process using ccache
@@ -24,3 +24,9 @@ file(GLOB SOURCES src/*.c)
 add_executable(renaisscript ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "include" "lib")
 
+include(CTest)
+enable_testing()
+
+add_test(NAME testHelpOptionFlag COMMAND renaisscript -h)
+add_test(NAME testVersionOptionFlag COMMAND renaisscript -v)
+add_test(NAME testScanFileRens COMMAND renaisscript ../test/file.rens)
