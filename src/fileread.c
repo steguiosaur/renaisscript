@@ -3,9 +3,7 @@
 // `fileread.c` scans if file is the accepted extension file (*.rens ||
 // *.rn). It also allocates memory for a dynamic array where the contents of the
 // file is stored.
-//
-// Several references:
-// https://stackoverflow.com/questions/54943083
+// Responsible for writing the symbol table text file when -s option is raised
 
 #include "fileread.h"
 
@@ -60,21 +58,21 @@ void cleanupFileContents() {
     file_contents = NULL;
 }
 
-// continously collect token and lexeme strings on lexer (NEEDS REFACTOR)
+// continously collect token and lexeme strings on lexer
 void collectStringOutput(const char *tok_name, char *lexeme) {
-    const int size_no_lex = 16; // from justified tok_name field + 1 for space
-    char *new_str = (char *)malloc(size_no_lex + sizeof(lexeme) + 1);
-    sprintf(new_str, "%-15s %-s\n", tok_name, lexeme);
+    unsigned long needed = snprintf(NULL, 0, "%-15s %-s\n", tok_name, lexeme);
+    char *buffer = (char *)malloc(needed + 1);
+    sprintf(buffer, "%-15s %-s\n", tok_name, lexeme);
 
     if (str_out == NULL) {
-        str_out = (char *)malloc(strlen(new_str) + 1);
-        strcpy(str_out, new_str);
+        str_out = (char *)malloc(strlen(buffer) + 1);
+        strcpy(str_out, buffer);
     } else {
-        str_out = (char *)realloc(str_out, strlen(new_str) + strlen(str_out) + 1);
-        strcat(str_out, new_str);
+        str_out = (char *)realloc(str_out, strlen(buffer) + strlen(str_out) + 1);
+        strcat(str_out, buffer);
     }
 
-    free(new_str);
+    free(buffer);
 }
 
 // write collected strings from str_out to file
