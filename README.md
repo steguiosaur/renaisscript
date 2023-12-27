@@ -58,7 +58,7 @@ N/A
 5. Test using `ctest` executable (integrated with CMake)
 
     ```console
-    ctest --test-dir build
+    ctest --test-dir build --output-on-failure
     ```
 
 6. **DEBUGGING:** Enable debug options (requires regeneration of build files)

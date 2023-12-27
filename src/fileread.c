@@ -3,9 +3,7 @@
 // `fileread.c` scans if file is the accepted extension file (*.rens ||
 // *.rn). It also allocates memory for a dynamic array where the contents of the
 // file is stored.
-//
-// Several references:
-// https://stackoverflow.com/questions/54943083
+// Responsible for writing the symbol table text file when -s option is raised
 
 #include "fileread.h"
 

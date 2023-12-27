@@ -1,0 +1,15 @@
+# assignement statement with different types
+maketh glyph name[] = "Firstname Lastname";     # char array for string 
+maketh glyph room = 'A';                        # character
+maketh count age = 23;                          # integer
+maketh portion average = 90.41;                 # float
+maketh fraction budget = 100.10;                # double
+maketh verdict passed = yay;                    # boolean true
+maketh verdict graduated = nay;                 # boolean false
+
+define nought printPersonInfo() {
+    sayeth("Name: " + name);
+    sayeth("Room: " + room);
+    sayeth("Age: " + age);
+    sayeth("Average: " + average);
+}

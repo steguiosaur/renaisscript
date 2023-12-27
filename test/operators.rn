@@ -1,0 +1,17 @@
+# operators
+
+# arithmetic operators
+sayeth("%d", 2 + 4);
+sayeth("%d", 2 - 4);
+sayeth("%d", 2 * 4);
+sayeth("%d", 2 / 4);
+sayeth("%d", 2 // 4);
+sayeth("%d", 2 ** 4);
+sayeth("%d", 2 % 4);
+
+sayeth("%d", 2++);
+sayeth("%d", 2--);
+
+# assignment operators
+# relational operators
+# logical operators
