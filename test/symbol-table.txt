@@ -4,13 +4,13 @@ TK_IDENTIFIER   name
 TK_LBRACKET     [
 TK_RBRACKET     ]
 TK_ASSIGN       =
-TK_STRINGLIT    "Firstname Lastname"
+TK_STRINGLIT    Firstname Lastname
 TK_SEMICOLON    ;
 TK_LET          maketh
 TK_CHAR         glyph
 TK_IDENTIFIER   room
 TK_ASSIGN       =
-TK_CHARACLIT    'A'
+TK_CHARACLIT    A
 TK_SEMICOLON    ;
 TK_LET          maketh
 TK_INT          count
@@ -50,28 +50,28 @@ TK_RPAREN       )
 TK_LCURLY       {
 TK_OUT          sayeth
 TK_LPAREN       (
-TK_STRINGLIT    "Name: "
+TK_STRINGLIT    Name: 
 TK_PLUS         +
 TK_IDENTIFIER   name
 TK_RPAREN       )
 TK_SEMICOLON    ;
 TK_OUT          sayeth
 TK_LPAREN       (
-TK_STRINGLIT    "Room: "
+TK_STRINGLIT    Room: 
 TK_PLUS         +
 TK_IDENTIFIER   room
 TK_RPAREN       )
 TK_SEMICOLON    ;
 TK_OUT          sayeth
 TK_LPAREN       (
-TK_STRINGLIT    "Age: "
+TK_STRINGLIT    Age: 
 TK_PLUS         +
 TK_IDENTIFIER   age
 TK_RPAREN       )
 TK_SEMICOLON    ;
 TK_OUT          sayeth
 TK_LPAREN       (
-TK_STRINGLIT    "Average: "
+TK_STRINGLIT    Average: 
 TK_PLUS         +
 TK_IDENTIFIER   average
 TK_RPAREN       )

@@ -325,6 +325,13 @@ static char lexerPeekNextChar(Lexer *lexer) {
 static char *lexerGetLexAsString(Lexer *lexer) {
     const char *value = lexer->contents + lexer->index;
     unsigned long len = lexer->read_index - lexer->index;
+
+    // discard quotes and double quotes in character and string literals
+    if (lexer->ch == '\'' || lexer->ch == '"') {
+        value++;
+        len = len - 2;
+    }
+
     char *lexeme = strndup(value, len);
     return lexeme;
 }
