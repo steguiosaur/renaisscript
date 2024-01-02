@@ -55,6 +55,8 @@ Token *lexerGetNextToken(Lexer *lexer) {
         return tokenCreate(TK_RBRACKET, lexerGetLexAsString(lexer));
     case ',':
         return tokenCreate(TK_COMMA, lexerGetLexAsString(lexer));
+    case '.':
+        return tokenCreate(TK_DOT, lexerGetLexAsString(lexer));
     case ';':
         return tokenCreate(TK_SEMICOLON, lexerGetLexAsString(lexer));
     case ':':
