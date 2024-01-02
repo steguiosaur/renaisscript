@@ -154,9 +154,13 @@ Token *lexerGetNextToken(Lexer *lexer) {
                                   lexerPeekNextChar(lexer) == 'r')) {
             lexerReadNextChar(lexer);
         }
-        lexerReadNextChar(lexer);
 
-        return tokenCreate(TK_CHARACLIT, lexerGetLexAsString(lexer));
+        lexerReadNextChar(lexer);
+        if (lexer->ch == '\'') {
+            return tokenCreate(TK_CHARACLIT, lexerGetLexAsString(lexer));
+        }
+
+        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
     }
 
     // detect string literals
