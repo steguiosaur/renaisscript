@@ -140,7 +140,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
     // detect character literals
     if (lexer->ch == '\'') {
         lexerReadNextChar(lexer);
-        
+
         // error if character empty character constant
         if (lexer->ch == '\'') {
             return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
@@ -192,11 +192,24 @@ Token *lexerGetNextToken(Lexer *lexer) {
 
     // detect integer literals
     if (isValidNumber(lexer->ch)) {
-        while (isValidNumber(lexerPeekNextChar(lexer))) {
+        unsigned short dot_count = 0;
+        while (isValidNumber(lexerPeekNextChar(lexer)) ||
+               lexerPeekNextChar(lexer) == '.') {
             lexerReadNextChar(lexer);
+            if (lexer->ch == '.') {
+                dot_count++;
+            }
         }
 
-        return tokenCreate(TK_INTLIT, lexerGetLexAsString(lexer));
+        if (dot_count == 0) {
+            return tokenCreate(TK_INTLIT, lexerGetLexAsString(lexer));
+        }
+
+        if (dot_count == 1) {
+            return tokenCreate(TK_FLTLIT, lexerGetLexAsString(lexer));
+        }
+
+        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
     }
 
     return tokenCreate(TK_ILLEGAL, lexerGetLexAsString(lexer));
