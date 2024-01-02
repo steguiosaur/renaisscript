@@ -137,6 +137,28 @@ Token *lexerGetNextToken(Lexer *lexer) {
         break;
     }
 
+    // detect character literals
+    if (lexer->ch == '\'') {
+        lexerReadNextChar(lexer);
+        
+        // error if character empty character constant
+        if (lexer->ch == '\'') {
+            return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
+        }
+
+        if (lexer->ch == '\\' && (lexerPeekNextChar(lexer) == '\\' ||
+                                  lexerPeekNextChar(lexer) == '\'' ||
+                                  lexerPeekNextChar(lexer) == '0' ||
+                                  lexerPeekNextChar(lexer) == 'n' ||
+                                  lexerPeekNextChar(lexer) == 't' ||
+                                  lexerPeekNextChar(lexer) == 'r')) {
+            lexerReadNextChar(lexer);
+        }
+        lexerReadNextChar(lexer);
+
+        return tokenCreate(TK_CHARACLIT, lexerGetLexAsString(lexer));
+    }
+
     // detect string literals
     if (lexer->ch == '"') {
         lexerReadNextChar(lexer);
@@ -148,7 +170,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
         }
 
         if (lexerPeekNextChar(lexer) != '\0') {
-            return tokenCreate(TK_STRING, lexerGetLexAsString(lexer));
+            return tokenCreate(TK_STRINGLIT, lexerGetLexAsString(lexer));
         }
 
         return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
