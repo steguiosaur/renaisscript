@@ -225,18 +225,23 @@ Token *lexerGetNextToken(Lexer *lexer) {
 
 // pass tokens here to filter error type tokens
 int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
+    if (!(token->type == TK_ILLEGALCHR || token->type == TK_EMPTYCHERR ||
+          token->type == TK_MULTICHERR || token->type == TK_FLOATERR ||
+          token->type == TK_STREOFERR)) {
+        return 0;
+    }
     unsigned long column = lexer->index - lexer->curr_line_start + 1;
     const char *line_start = lexer->contents + lexer->curr_line_start;
     unsigned long line_end = lexer->curr_line_start;
     while (lexer->contents[line_end] != '\n') {
         line_end++;
     }
-    const char *curr_line = strndup(line_start, line_end - lexer->curr_line_start);
+    char *curr_line = strndup(line_start, line_end - lexer->curr_line_start);
 
     switch (token->type) {
     case TK_ILLEGALCHR: // illegal character error
-        printf("ERROR: %s (line %lu) (column %lu): '%s' not recognized as token or symbol "
-               "[ILLEGAL_CHARACTER_ERROR] \n",
+        printf("ERROR: %s (line %lu) (column %lu): '%s' not recognized as "
+               "token or symbol [ILLEGAL_CHARACTER_ERROR] \n",
                filename, lexer->line_number, column, token->lexeme);
         printf(" %5lu | %s\n", lexer->line_number, curr_line);
         printf("       | ");
@@ -246,8 +251,8 @@ int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
         printf("^\n");
         return 1;
     case TK_EMPTYCHERR: // empty character literal error
-        printf("ERROR: %s (line %lu) (column %lu): missing character literal '' value "
-               "[EMPTY_CHARACTER_ERROR] \n",
+        printf("ERROR: %s (line %lu) (column %lu): missing character literal "
+               "'' value [EMPTY_CHARACTER_ERROR] \n",
                filename, lexer->line_number, column);
         printf(" %5lu | %s\n", lexer->line_number, curr_line);
         printf("       | ");
@@ -257,8 +262,8 @@ int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
         printf("^^\n");
         return 1;
     case TK_MULTICHERR: // multi character error
-        printf("ERROR: %s (line %lu) (column %lu): multiple value assigned on character literal"
-               " '%s' [MULTIPLE_CHARACTER_ERROR]\n",
+        printf("ERROR: %s (line %lu) (column %lu): multiple value assigned on "
+               "character literal '%s' [MULTIPLE_CHARACTER_ERROR]\n",
                filename, lexer->line_number, column, token->lexeme);
         printf(" %5lu | %s\n", lexer->line_number, curr_line);
         printf("       | ");
@@ -271,8 +276,8 @@ int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
         printf("\n");
         return 1;
     case TK_FLOATERR: // invalid suffix on float literal
-        printf("ERROR: %s (line %lu) (column %lu): multiple decimal point occurrences detected "
-               "on %s [FLOAT_SUFFIX_ERROR]\n",
+        printf("ERROR: %s (line %lu) (column %lu): multiple decimal point "
+               "occurrences detected on %s [FLOAT_SUFFIX_ERROR]\n",
                filename, lexer->line_number, column, token->lexeme);
         printf(" %5lu | %s\n", lexer->line_number, curr_line);
         printf("       | ");
@@ -293,8 +298,8 @@ int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
         printf("\n");
         return 1;
     case TK_STREOFERR: // unterminated string literal error
-        printf("ERROR: %s (line %lu) (column %lu): unterminated string literal reached EOF "
-               "[UNTERMINATED_STRING_ERROR]\n",
+        printf("ERROR: %s (line %lu) (column %lu): unterminated string literal "
+               "reached EOF [UNTERMINATED_STRING_ERROR]\n",
                filename, lexer->line_number, column);
         printf(" %5lu | %s\n", lexer->line_number, curr_line);
         printf("       | ");
