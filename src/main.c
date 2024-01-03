@@ -17,6 +17,8 @@ int main(const int argc, char **argv) {
         }
     }
 
+    unsigned int return_error = 0;
+
     // process inputfile's characters
     if (file_contents != NULL) {
         Lexer *lexer = initLexer(file_contents);
@@ -26,11 +28,7 @@ int main(const int argc, char **argv) {
 
             // print error and exit fail if token type ERR and INVALID detected
             if (lexerErrorHandler(lexer, tok, inputfile)) {
-                tokenCleanup(&tok);
-                lexerCleanUp(&lexer);
-                cleanupCollectedString();
-                cleanupFileContents();
-                return 1;
+                return_error = 1;
             }
 
             // for symbol table file output
@@ -51,6 +49,10 @@ int main(const int argc, char **argv) {
         lexerCleanUp(&lexer);
         cleanupCollectedString();
         cleanupFileContents();
+    }
+
+    if (return_error) {
+        return 1;
     }
 
     return 0;

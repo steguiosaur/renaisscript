@@ -29,6 +29,7 @@ Lexer *initLexer(const char *contents) {
     lexer->index = 0;
     lexer->read_index = 0;
     lexer->line_number = 1;
+    lexer->curr_line_start = 0;
 
     return lexer;
 }
@@ -143,7 +144,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
 
         // error if character empty character constant
         if (lexer->ch == '\'') {
-            return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
+            return tokenCreate(TK_EMPTYCHERR, lexerGetLexAsString(lexer));
         }
 
         if (lexer->ch == '\\' && (lexerPeekNextChar(lexer) == '\\' ||
@@ -160,7 +161,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
             return tokenCreate(TK_CHARACLIT, lexerGetLexAsString(lexer));
         }
 
-        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
+        if (lexer->ch != '\'') {
+            lexerReadNextChar(lexer);
+        }
+        return tokenCreate(TK_MULTICHERR, lexerGetLexAsString(lexer));
     }
 
     // detect string literals
@@ -177,7 +181,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
             return tokenCreate(TK_STRINGLIT, lexerGetLexAsString(lexer));
         }
 
-        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
+        return tokenCreate(TK_STREOFERR, lexerGetLexAsString(lexer));
     }
 
     // detect identifier and keyword types
@@ -213,29 +217,45 @@ Token *lexerGetNextToken(Lexer *lexer) {
             return tokenCreate(TK_FLTLIT, lexerGetLexAsString(lexer));
         }
 
-        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
+        return tokenCreate(TK_FLOATERR, lexerGetLexAsString(lexer));
     }
 
-    return tokenCreate(TK_ILLEGAL, lexerGetLexAsString(lexer));
+    return tokenCreate(TK_ILLEGALCHR, lexerGetLexAsString(lexer));
 }
 
-// pass tokens here to filter TK_ERR and TK_ILLEGAL types
+// pass tokens here to filter error type tokens
 int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
-    if (token->type == TK_ILLEGAL) {
-        printf("[ERROR] InvalidToken: %s not recognized as token on %s "
-               "line:%lu\n",
-               token->lexeme, filename, lexer->line_number);
+    switch (token->type) {
+    case TK_ILLEGALCHR: // illegal character error
+        printf("[ILLEGAL_CHARACTER_ERROR] %s:%lu:%lu:"
+               " %s not recognized as token or symbol\n",
+               filename, lexer->line_number, lexer->index, token->lexeme);
+        //printf(" %5lu | %s\n", lexer->line_number, curr_line);
         return 1;
-    }
-
-    if (token->type == TK_ERR) {
-        printf("[ERROR] UnterminatedString: unterminated string literal "
-               "reached EOF on %s line:%lu\n",
-               filename, lexer->line_number);
+    case TK_EMPTYCHERR: // empty character literal error
+        printf("[EMPTY_CHARACTER_ERROR] %s:%lu:%lu:"
+               " unspecified character literal ''\n",
+               filename, lexer->line_number, lexer->index);
         return 1;
+    case TK_MULTICHERR: // multi character error
+        printf("[MULTIPLE_CHAR_ERROR] %s:%lu:%lu:"
+               " multiple value assigned on character literal '%s'\n",
+               filename, lexer->line_number, lexer->index, token->lexeme);
+        return 1;
+    case TK_FLOATERR: // invalid suffix on float literal
+        printf("[FLOAT_SUFFIX_ERROR] %s:%lu:%lu:"
+               " multiple decimal point occurrences detected on %s\n",
+               filename, lexer->line_number, lexer->index, token->lexeme);
+        return 1;
+    case TK_STREOFERR: // unterminated string literal error
+        printf("[UNTERMINATED_STRING_ERROR] %s:%lu:%lu: unterminated string"
+               " literal reached EOF starting on line:%lu column:%lu\n",
+               filename, lexer->line_number, lexer->index, lexer->line_number,
+               lexer->index);
+        return 1;
+    default:
+        return 0;
     }
-
-    return 0;
 }
 
 // free lexer allocated memory
@@ -280,6 +300,7 @@ static void lexerSkipWhitespace(Lexer *lexer) {
         // track current line number
         if (lexer->ch == '\n') {
             lexer->line_number++;
+            lexer->curr_line_start = lexer->read_index;
         }
 
         // skip block line comment

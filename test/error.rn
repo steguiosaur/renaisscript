@@ -1,0 +1,8 @@
+# errors
+''
+maketh glyph empty_char_error = '';                        # character
+maketh glyph multi_char_error = 'AA';                        # character
+maketh portion average = 90.41.234;                 # float
+
+@@@
+## non terminated comment
