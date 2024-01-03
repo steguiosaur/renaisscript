@@ -12,20 +12,21 @@
 #include <string.h>
 
 char *file_contents = NULL; // access file character array
-char *str_out = NULL;        // store symbol table
+char *str_out = NULL;       // store symbol table
 
 int getRensFileContents(const char *filename) {
     // detect rens or rn file extension
     if (!(strstr(filename, ".rens") || strstr(filename, ".rn"))) {
-        printf("[ERROR] FileNotSupported: unrecognized file extension '%s'\n",
-               filename);
+        printf(
+            "ERROR: unrecognized file extension '%s' [FILE_EXTENSION_ERROR]\n",
+            filename);
         return 1;
     }
 
     // open given filename input
     FILE *file_ptr = fopen(filename, "r");
     if (file_ptr == NULL) {
-        printf("[ERROR] FileNotFound: '%s'\n", filename);
+        printf("error: '%s'\n", filename);
         return 1;
     }
 
@@ -37,7 +38,8 @@ int getRensFileContents(const char *filename) {
     // allocate memory for array
     file_contents = (char *)malloc(size + 1);
     if (file_contents == NULL) {
-        printf("[ERROR] Memory Allocation Failure\n");
+        printf("ERROR: file contents memory allocation failure "
+               "[CONTENT_ALLOCATION_ERROR]\n");
         fclose(file_ptr);
         return 1;
     }
@@ -59,27 +61,34 @@ void cleanupFileContents() {
 }
 
 // continously collect token and lexeme strings on lexer
-void collectStringOutput(const char *tok_name, char *lexeme) {
-    unsigned long needed = snprintf(NULL, 0, "%-15s %-s\n", tok_name, lexeme);
+void collectStringOutput(const unsigned long lineno, const unsigned long col,
+                         const char *tok_name, char *lexeme) {
+    unsigned long needed = snprintf(NULL, 0, "%-9lu %-8lu %-15s %-s\n", lineno,
+                                    col, tok_name, lexeme);
     char *buffer = (char *)malloc(needed + 1);
-    sprintf(buffer, "%-15s %-s\n", tok_name, lexeme);
+    sprintf(buffer, "%-9lu %-8lu %-15s %-s\n", lineno, col, tok_name, lexeme);
 
     if (str_out == NULL) {
-        str_out = (char *)malloc(strlen(buffer) + 1);
-        strcpy(str_out, buffer);
+        str_out = (char *)malloc(strlen(buffer) + 44);
+        strcpy(str_out, "LINENO.   COLUMN   TOKEN           LEXEME\n");
+        strcat(str_out, buffer);
     } else {
-        str_out = (char *)realloc(str_out, strlen(buffer) + strlen(str_out) + 1);
+        str_out =
+            (char *)realloc(str_out, strlen(buffer) + strlen(str_out) + 1);
         strcat(str_out, buffer);
     }
 
     free(buffer);
 }
 
+void printCollectedStringOutput() { printf("%s", str_out); }
+
 // write collected strings from str_out to file
 int storeCollectedStringOutput(const char *filename) {
     if (filename == NULL) {
-        printf("[ERROR] NullFilePtr: received NULL as file."
-               "Filter storeCollectedStringOutput() for a non-NULL value\n");
+        printf("ERROR: received NULL as file. Filter"
+               "storeCollectedStringOutput() for a non-NULL value"
+               "[NULL_FILE_ERROR]\n");
         return 1;
     }
 

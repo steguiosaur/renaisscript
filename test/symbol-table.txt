@@ -1,37 +1,38 @@
-TK_FUNCTION     define
-TK_INT          count
-TK_IDENTIFIER   main
-TK_LPAREN       (
-TK_RPAREN       )
-TK_LCURLY       {
-TK_LET          maketh
-TK_INT          count
-TK_IDENTIFIER   x
-TK_ASSIGN       =
-TK_INTLIT       5
-TK_SEMICOLON    ;
-TK_IDENTIFIER   x
-TK_INCREMENT    ++
-TK_SEMICOLON    ;
-TK_IF           if
-TK_LPAREN       (
-TK_INTLIT       30
-TK_NOTEQUAL     !=
-TK_INTLIT       4
-TK_RPAREN       )
-TK_LCURLY       {
-TK_OUT          sayeth
-TK_LPAREN       (
-TK_STRING       "value not \n\r\t\v\\\'\"equal"
-TK_RPAREN       )
-TK_SEMICOLON    ;
-TK_RCURLY       }
-TK_OUT          sayeth
-TK_LPAREN       (
-TK_STRING       "Hello thy world"
-TK_RPAREN       )
-TK_SEMICOLON    ;
-TK_RETURN       returneth
-TK_INTLIT       0
-TK_SEMICOLON    ;
-TK_RCURLY       }
+LINENO.   COLUMN   TOKEN           LEXEME
+1         1        TK_FUNCTION     define
+1         8        TK_INT          count
+1         14       TK_IDENTIFIER   main
+1         18       TK_LPAREN       (
+1         19       TK_RPAREN       )
+1         21       TK_LCURLY       {
+6         5        TK_LET          maketh
+6         12       TK_INT          count
+6         18       TK_IDENTIFIER   x
+6         20       TK_ASSIGN       =
+6         22       TK_INTLIT       5
+6         23       TK_SEMICOLON    ;
+7         5        TK_IDENTIFIER   x
+7         6        TK_INCREMENT    ++
+7         8        TK_SEMICOLON    ;
+11        5        TK_IF           if
+11        8        TK_LPAREN       (
+11        9        TK_INTLIT       30
+11        12       TK_NOTEQUAL     !=
+11        15       TK_INTLIT       4
+11        16       TK_RPAREN       )
+11        18       TK_LCURLY       {
+12        9        TK_OUT          sayeth
+12        15       TK_LPAREN       (
+12        16       TK_STRINGLIT    value not \n\r\t\v\\\'\"equal
+12        47       TK_RPAREN       )
+12        48       TK_SEMICOLON    ;
+13        5        TK_RCURLY       }
+15        5        TK_OUT          sayeth
+15        11       TK_LPAREN       (
+15        12       TK_STRINGLIT    Hello thy world
+15        29       TK_RPAREN       )
+15        30       TK_SEMICOLON    ;
+17        5        TK_RETURN       returneth
+17        15       TK_INTLIT       0
+17        16       TK_SEMICOLON    ;
+18        1        TK_RCURLY       }

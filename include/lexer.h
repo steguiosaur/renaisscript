@@ -5,12 +5,17 @@
 
 // token types
 typedef enum {
-    TK_ILLEGAL,
-    TK_ERR,
+    TK_ILLEGALCHR,
+    TK_EMPTYCHERR,
+    TK_MULTICHERR,
+    TK_FLOATERR,
+    TK_STREOFERR,
     TK_EOF,
     TK_IDENTIFIER,
-    TK_STRING,
+    TK_CHARACLIT,
+    TK_STRINGLIT,
     TK_INTLIT,
+    TK_FLTLIT,
     TK_AMPERSAND,
     TK_AND,
     TK_OR,
@@ -34,6 +39,7 @@ typedef enum {
     TK_LEQUAL,
     TK_NOTEQUAL,
     TK_COMMA,
+    TK_DOT,
     TK_SEMICOLON,
     TK_COLON,
     TK_LPAREN,
@@ -76,6 +82,7 @@ typedef struct LexerStruct {
     unsigned long index;
     unsigned long read_index;
     unsigned long line_number;
+    unsigned long curr_line_start;
     char ch;
 } Lexer;
 
@@ -96,12 +103,17 @@ int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename);
 
 // for printing actual TokenType string
 static const char *const tk_map[] = {
-    "TK_ILLEGAL",
-    "TK_ERR",
+    "TK_ILLEGALCHR",
+    "TK_EMPTYCHERR",
+    "TK_MULTICHERR",
+    "TK_FLOATERR",
+    "TK_STREOFERR",
     "TK_EOF",
     "TK_IDENTIFIER",
-    "TK_STRING",
+    "TK_CHARACLIT",
+    "TK_STRINGLIT",
     "TK_INTLIT",
+    "TK_FLTLIT",
     "TK_AMPERSAND",
     "TK_AND",
     "TK_OR",
@@ -125,6 +137,7 @@ static const char *const tk_map[] = {
     "TK_LEQUAL",
     "TK_NOTEQUAL",
     "TK_COMMA",
+    "TK_DOT",
     "TK_SEMICOLON",
     "TK_COLON",
     "TK_LPAREN",

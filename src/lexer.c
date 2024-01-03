@@ -29,6 +29,7 @@ Lexer *initLexer(const char *contents) {
     lexer->index = 0;
     lexer->read_index = 0;
     lexer->line_number = 1;
+    lexer->curr_line_start = 0;
 
     return lexer;
 }
@@ -55,6 +56,8 @@ Token *lexerGetNextToken(Lexer *lexer) {
         return tokenCreate(TK_RBRACKET, lexerGetLexAsString(lexer));
     case ',':
         return tokenCreate(TK_COMMA, lexerGetLexAsString(lexer));
+    case '.':
+        return tokenCreate(TK_DOT, lexerGetLexAsString(lexer));
     case ';':
         return tokenCreate(TK_SEMICOLON, lexerGetLexAsString(lexer));
     case ':':
@@ -135,6 +138,35 @@ Token *lexerGetNextToken(Lexer *lexer) {
         break;
     }
 
+    // detect character literals
+    if (lexer->ch == '\'') {
+        lexerReadNextChar(lexer);
+
+        // error if character empty character constant
+        if (lexer->ch == '\'') {
+            return tokenCreate(TK_EMPTYCHERR, lexerGetLexAsString(lexer));
+        }
+
+        if (lexer->ch == '\\' && (lexerPeekNextChar(lexer) == '\\' ||
+                                  lexerPeekNextChar(lexer) == '\'' ||
+                                  lexerPeekNextChar(lexer) == '0' ||
+                                  lexerPeekNextChar(lexer) == 'n' ||
+                                  lexerPeekNextChar(lexer) == 't' ||
+                                  lexerPeekNextChar(lexer) == 'r')) {
+            lexerReadNextChar(lexer);
+        }
+
+        lexerReadNextChar(lexer);
+        if (lexer->ch == '\'') {
+            return tokenCreate(TK_CHARACLIT, lexerGetLexAsString(lexer));
+        }
+
+        if (lexer->ch != '\'') {
+            lexerReadNextChar(lexer);
+        }
+        return tokenCreate(TK_MULTICHERR, lexerGetLexAsString(lexer));
+    }
+
     // detect string literals
     if (lexer->ch == '"') {
         lexerReadNextChar(lexer);
@@ -146,10 +178,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
         }
 
         if (lexerPeekNextChar(lexer) != '\0') {
-            return tokenCreate(TK_STRING, lexerGetLexAsString(lexer));
+            return tokenCreate(TK_STRINGLIT, lexerGetLexAsString(lexer));
         }
 
-        return tokenCreate(TK_ERR, lexerGetLexAsString(lexer));
+        return tokenCreate(TK_STREOFERR, lexerGetLexAsString(lexer));
     }
 
     // detect identifier and keyword types
@@ -168,33 +200,112 @@ Token *lexerGetNextToken(Lexer *lexer) {
 
     // detect integer literals
     if (isValidNumber(lexer->ch)) {
-        while (isValidNumber(lexerPeekNextChar(lexer))) {
+        unsigned short dot_count = 0;
+        while (isValidNumber(lexerPeekNextChar(lexer)) ||
+               lexerPeekNextChar(lexer) == '.') {
             lexerReadNextChar(lexer);
+            if (lexer->ch == '.') {
+                dot_count++;
+            }
         }
 
-        return tokenCreate(TK_INTLIT, lexerGetLexAsString(lexer));
+        if (dot_count == 0) {
+            return tokenCreate(TK_INTLIT, lexerGetLexAsString(lexer));
+        }
+
+        if (dot_count == 1) {
+            return tokenCreate(TK_FLTLIT, lexerGetLexAsString(lexer));
+        }
+
+        return tokenCreate(TK_FLOATERR, lexerGetLexAsString(lexer));
     }
 
-    return tokenCreate(TK_ILLEGAL, lexerGetLexAsString(lexer));
+    return tokenCreate(TK_ILLEGALCHR, lexerGetLexAsString(lexer));
 }
 
-// pass tokens here to filter TK_ERR and TK_ILLEGAL types
+// pass tokens here to filter error type tokens
 int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
-    if (token->type == TK_ILLEGAL) {
-        printf("[ERROR] InvalidToken: %s not recognized as token on %s "
-               "line:%lu\n",
-               token->lexeme, filename, lexer->line_number);
-        return 1;
+    unsigned long column = lexer->index - lexer->curr_line_start + 1;
+    const char *line_start = lexer->contents + lexer->curr_line_start;
+    unsigned long line_end = lexer->curr_line_start;
+    while (lexer->contents[line_end] != '\n') {
+        line_end++;
     }
+    const char *curr_line = strndup(line_start, line_end - lexer->curr_line_start);
 
-    if (token->type == TK_ERR) {
-        printf("[ERROR] UnterminatedString: unterminated string literal "
-               "reached EOF on %s line:%lu\n",
-               filename, lexer->line_number);
+    switch (token->type) {
+    case TK_ILLEGALCHR: // illegal character error
+        printf("ERROR: %s (line %lu) (column %lu): '%s' not recognized as token or symbol "
+               "[ILLEGAL_CHARACTER_ERROR] \n",
+               filename, lexer->line_number, column, token->lexeme);
+        printf(" %5lu | %s\n", lexer->line_number, curr_line);
+        printf("       | ");
+        for (int i = 0; i < column - 1; i++) {
+            putchar(' ');
+        }
+        printf("^\n");
         return 1;
+    case TK_EMPTYCHERR: // empty character literal error
+        printf("ERROR: %s (line %lu) (column %lu): missing character literal '' value "
+               "[EMPTY_CHARACTER_ERROR] \n",
+               filename, lexer->line_number, column);
+        printf(" %5lu | %s\n", lexer->line_number, curr_line);
+        printf("       | ");
+        for (int i = 0; i < column - 1; i++) {
+            putchar(' ');
+        }
+        printf("^^\n");
+        return 1;
+    case TK_MULTICHERR: // multi character error
+        printf("ERROR: %s (line %lu) (column %lu): multiple value assigned on character literal"
+               " '%s' [MULTIPLE_CHARACTER_ERROR]\n",
+               filename, lexer->line_number, column, token->lexeme);
+        printf(" %5lu | %s\n", lexer->line_number, curr_line);
+        printf("       | ");
+        for (int i = 0; i < column - 1; i++) {
+            putchar(' ');
+        }
+        for (int i = 0; i < strlen(token->lexeme) + 2; i++) {
+            putchar('^');
+        }
+        printf("\n");
+        return 1;
+    case TK_FLOATERR: // invalid suffix on float literal
+        printf("ERROR: %s (line %lu) (column %lu): multiple decimal point occurrences detected "
+               "on %s [FLOAT_SUFFIX_ERROR]\n",
+               filename, lexer->line_number, column, token->lexeme);
+        printf(" %5lu | %s\n", lexer->line_number, curr_line);
+        printf("       | ");
+        for (int i = 0; i < column - 1; i++) {
+            putchar(' ');
+        }
+        int excess_dot = 0;
+        for (int i = 0; i < strlen(token->lexeme); i++) {
+            if (token->lexeme[i] == '.') {
+                excess_dot++;
+            }
+            if (excess_dot < 2) {
+                putchar(' ');
+            } else {
+                putchar('^');
+            }
+        }
+        printf("\n");
+        return 1;
+    case TK_STREOFERR: // unterminated string literal error
+        printf("ERROR: %s (line %lu) (column %lu): unterminated string literal reached EOF "
+               "[UNTERMINATED_STRING_ERROR]\n",
+               filename, lexer->line_number, column);
+        printf(" %5lu | %s\n", lexer->line_number, curr_line);
+        printf("       | ");
+        for (int i = 0; i < column - 1; i++) {
+            putchar(' ');
+        }
+        printf("^ ~~ expected another '\"' double quote\n");
+        return 1;
+    default:
+        return 0;
     }
-
-    return 0;
 }
 
 // free lexer allocated memory
@@ -239,6 +350,7 @@ static void lexerSkipWhitespace(Lexer *lexer) {
         // track current line number
         if (lexer->ch == '\n') {
             lexer->line_number++;
+            lexer->curr_line_start = lexer->read_index;
         }
 
         // skip block line comment
@@ -288,6 +400,13 @@ static char lexerPeekNextChar(Lexer *lexer) {
 static char *lexerGetLexAsString(Lexer *lexer) {
     const char *value = lexer->contents + lexer->index;
     unsigned long len = lexer->read_index - lexer->index;
+
+    // discard quotes and double quotes in character and string literals
+    if (lexer->ch == '\'' || lexer->ch == '"') {
+        value++;
+        len = len - 2;
+    }
+
     char *lexeme = strndup(value, len);
     return lexeme;
 }
