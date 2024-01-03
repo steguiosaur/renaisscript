@@ -76,6 +76,10 @@ void collectStringOutput(const char *tok_name, char *lexeme) {
     free(buffer);
 }
 
+void printCollectedStringOutput() {
+    printf("%s", str_out);
+}
+
 // write collected strings from str_out to file
 int storeCollectedStringOutput(const char *filename) {
     if (filename == NULL) {

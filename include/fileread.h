@@ -17,6 +17,8 @@ void cleanupFileContents();
 // continously collect token and lexeme strings on lexer
 void collectStringOutput(const char *tok_name, char *lexeme);
 
+void printCollectedStringOutput();
+
 // write collected strings from str_out to file
 int storeCollectedStringOutput(const char *filename);
 

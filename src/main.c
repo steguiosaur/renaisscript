@@ -32,12 +32,16 @@ int main(const int argc, char **argv) {
             }
 
             // for symbol table file output
-            if (symbolfile != NULL) {
+            if (symbolout == 1 || symbolfile != NULL) {
                 collectStringOutput(tk_map[tok->type], tok->lexeme);
             }
 
             tokenCleanup(&tok);
             tok = lexerGetNextToken(lexer);
+        }
+
+        if (symbolout) {
+           printCollectedStringOutput(); 
         }
 
         // write symbol table on specified symbol file in arguments

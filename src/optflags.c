@@ -13,7 +13,8 @@
 
 const char *inputfile = NULL;  // access the specified file
 const char *outputfile = NULL; // output executable name
-const char *symbolfile = NULL;  // write symbol table to stdout
+const char *symbolfile = NULL;  // write symbol table to file
+int symbolout = 0;  // print symbol table to stdout
 
 static void displayVersionInfo();
 static void displayHelpGuide();
@@ -25,7 +26,7 @@ int parseOptionFlags(const int argc, char *argv[]) {
 
     while (1) {
         // define flag options with and without argument
-        int flag = getopt(argc, argv, "o:s:vh");
+        int flag = getopt(argc, argv, "o:s:Svh");
 
         // no option flags detected starting with '-'
         if (flag == -1) {
@@ -38,6 +39,9 @@ int parseOptionFlags(const int argc, char *argv[]) {
             break;
         case 's':
             symbolfile = optarg;
+            break;
+        case 'S':
+            symbolout = 1;
             break;
         case 'v':
             displayVersionInfo();
@@ -104,9 +108,10 @@ static void displayHelpGuide() {
     printf("Usage: renaisscript [option...] [rensfile...].rens\n"
            "\n"
            "  -h                print help guide and exit successfully\n"
-           "  -v                print version and exit successfully\n"
            "  -o <filename>     write output to file\n"
            "  -s <filename>     write symbol table to file\n"
+           "  -S                print symbol table to stdout\n"
+           "  -v                print version and exit successfully\n"
            "\n"
            "Report issues on github.com/steguiosaur/renaisscript/issues\n");
 }

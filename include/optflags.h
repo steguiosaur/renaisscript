@@ -6,7 +6,8 @@
 // access file argument names with 'inputfile' and 'outputfile'
 extern const char *inputfile;  // access the specified file
 extern const char *outputfile; // output executable name
-extern const char *symbolfile;  // write symbol table to stdout
+extern const char *symbolfile;  // write symbol table to file
+extern int symbolout;  // print symbol table to stdout
 
 // detect argument type ( -h || -o <outputfile> [-s] || -v ) && inputfile
 extern int parseOptionFlags(int argc, char *argv[]);
