@@ -46,8 +46,9 @@ int parseOptionFlags(const int argc, char *argv[]) {
             displayHelpGuide();
             return 0;
         default:
-            printf("[ERROR] option flag '-%c' undefined\n", optopt);
             displayHelpGuide();
+            printf("ERROR: option or flag '-%c' undefined "
+                   "[UNKNOWN_OPTION_ERROR]\n", optopt);
             return 1;
         }
     }
@@ -59,23 +60,26 @@ int parseOptionFlags(const int argc, char *argv[]) {
 
     // no argument found after command or option '-o'
     if (optind > argc - 1) {
-        printf("[ERROR] input file not found in arguments\n");
+        displayHelpGuide();
+        printf("ERROR: input file not found in arguments "
+               "[UNSPECIFIED_FILE_ERROR]\n");
         return 1;
     }
 
     // get only 1 file argument and fail if > 1
     if (optind < argc - 1) {
-        printf("[ERROR] unparsed argument/s detected: ");
+        printf("ERROR: unparsed argument/s detected: ");
         for (int i = optind + 1; i < argc; i++) {
             printf("%s ", argv[i]);
         }
-        printf("\n");
+        printf("[UNPARSED_ARGUMENTS_ERROR]\n");
         return 1;
     }
 
     // detect incomplete option flag
     if (argv[optind][0] == '-') {
-        printf("[ERROR] incomplete option flag '%s' on argument %d\n",
+        printf("ERROR: incomplete option flag '%s' on argument %d"
+               "[INCOMPLETE_FLAG_ERROR]\n",
                argv[optind], optind);
         return 1;
     }
@@ -86,7 +90,7 @@ int parseOptionFlags(const int argc, char *argv[]) {
         return 0;
     }
 
-    printf("[ERROR] uncaught error\n");
+    printf("ERROR: uncaught error [UNCAUGHT_ERROR]\n");
     return 1;
 }
 

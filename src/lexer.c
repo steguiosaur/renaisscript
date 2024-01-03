@@ -225,33 +225,34 @@ Token *lexerGetNextToken(Lexer *lexer) {
 
 // pass tokens here to filter error type tokens
 int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename) {
+    unsigned long column = lexer->index - lexer->curr_line_start + 1;
     switch (token->type) {
     case TK_ILLEGALCHR: // illegal character error
-        printf("[ILLEGAL_CHARACTER_ERROR] %s:%lu:%lu:"
-               " %s not recognized as token or symbol\n",
-               filename, lexer->line_number, lexer->index, token->lexeme);
+        printf("ERROR: %s (line %lu) (column %lu): '%s' not recognized as token or symbol "
+               "[ILLEGAL_CHARACTER_ERROR] \n",
+               filename, lexer->line_number, column, token->lexeme);
         //printf(" %5lu | %s\n", lexer->line_number, curr_line);
         return 1;
     case TK_EMPTYCHERR: // empty character literal error
-        printf("[EMPTY_CHARACTER_ERROR] %s:%lu:%lu:"
-               " unspecified character literal ''\n",
-               filename, lexer->line_number, lexer->index);
+        printf("ERROR: %s (line %lu) (column %lu): missing character literal '' value "
+               "[EMPTY_CHARACTER_ERROR] \n",
+               filename, lexer->line_number, column);
         return 1;
     case TK_MULTICHERR: // multi character error
-        printf("[MULTIPLE_CHAR_ERROR] %s:%lu:%lu:"
-               " multiple value assigned on character literal '%s'\n",
-               filename, lexer->line_number, lexer->index, token->lexeme);
+        printf("ERROR: %s (line %lu) (column %lu): multiple value assigned on character literal"
+               " '%s' [MULTIPLE_CHARACTER_ERROR]\n",
+               filename, lexer->line_number, column, token->lexeme);
         return 1;
     case TK_FLOATERR: // invalid suffix on float literal
-        printf("[FLOAT_SUFFIX_ERROR] %s:%lu:%lu:"
-               " multiple decimal point occurrences detected on %s\n",
-               filename, lexer->line_number, lexer->index, token->lexeme);
+        printf("ERROR: %s (line %lu) (column %lu): multiple decimal point occurrences detected "
+               "on %s [FLOAT_SUFFIX_ERROR]\n",
+               filename, lexer->line_number, column, token->lexeme);
         return 1;
     case TK_STREOFERR: // unterminated string literal error
-        printf("[UNTERMINATED_STRING_ERROR] %s:%lu:%lu: unterminated string"
-               " literal reached EOF starting on line:%lu column:%lu\n",
-               filename, lexer->line_number, lexer->index, lexer->line_number,
-               lexer->index);
+        printf("ERROR: %s (line %lu) (column %lu): unterminated string literal reached EOF "
+               "starting on line:%lu column:%lu [UNTERMINATED_STRING_ERROR]\n",
+               filename, lexer->line_number, column, lexer->line_number,
+               column);
         return 1;
     default:
         return 0;
