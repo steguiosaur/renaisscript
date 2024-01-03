@@ -63,6 +63,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
     case ':':
         return tokenCreate(TK_COLON, lexerGetLexAsString(lexer));
     case '%':
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_ASSIGNMOD, lexerGetLexAsString(lexer));
+        }
         return tokenCreate(TK_MODULO, lexerGetLexAsString(lexer));
     case '+':
         if (lexerPeekNextChar(lexer) == '+') {
@@ -97,12 +101,20 @@ Token *lexerGetNextToken(Lexer *lexer) {
         }
         return tokenCreate(TK_BANG, lexerGetLexAsString(lexer));
     case '/':
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_ASSIGNDIV, lexerGetLexAsString(lexer));
+        }
         if (lexerPeekNextChar(lexer) == '/') {
             lexerReadNextChar(lexer);
             return tokenCreate(TK_FLOORDIV, lexerGetLexAsString(lexer));
         }
         return tokenCreate(TK_SLASH, lexerGetLexAsString(lexer));
     case '*':
+        if (lexerPeekNextChar(lexer) == '=') {
+            lexerReadNextChar(lexer);
+            return tokenCreate(TK_ASSIGNMUL, lexerGetLexAsString(lexer));
+        }
         if (lexerPeekNextChar(lexer) == '*') {
             lexerReadNextChar(lexer);
             return tokenCreate(TK_EXPONENT, lexerGetLexAsString(lexer));
