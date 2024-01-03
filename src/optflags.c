@@ -7,32 +7,26 @@
 // https://man7.org/linux/man-pages/man3/getopt.3.html
 
 #include "optflags.h"
+
 #include <getopt.h>
 #include <stdio.h>
 
 const char *inputfile = NULL;  // access the specified file
 const char *outputfile = NULL; // output executable name
+const char *symbolfile = NULL;  // write symbol table to file
+int symbolout = 0;  // print symbol table to stdout
 
-static void displayVersionInfo() {
-    printf("Renaisscript compiler version 0.1.0\n");
-}
+static void displayVersionInfo();
+static void displayHelpGuide();
 
-static void displayHelpGuide() {
-    printf("Usage: renaisscript [option...] [rensfile...].rens\n"
-           "\n"
-           "  -o <filename>     write output to file\n"
-           "  -h                print this help guide\n"
-           "  -v                print version information\n"
-           "\n"
-           "Only one option flag must be specified.\n");
-}
+/// PUBLIC FUNCTIONS
 
 int parseOptionFlags(const int argc, char *argv[]) {
     opterr = 0; // remove default getopt() error
 
     while (1) {
         // define flag options with and without argument
-        int flag = getopt(argc, argv, "o:vh");
+        int flag = getopt(argc, argv, "o:s:Svh");
 
         // no option flags detected starting with '-'
         if (flag == -1) {
@@ -43,6 +37,12 @@ int parseOptionFlags(const int argc, char *argv[]) {
         case 'o':
             outputfile = optarg;
             break;
+        case 's':
+            symbolfile = optarg;
+            break;
+        case 'S':
+            symbolout = 1;
+            break;
         case 'v':
             displayVersionInfo();
             return 0;
@@ -50,8 +50,9 @@ int parseOptionFlags(const int argc, char *argv[]) {
             displayHelpGuide();
             return 0;
         default:
-            printf("[ERROR] option flag '-%c' undefined\n", optopt);
             displayHelpGuide();
+            printf("ERROR: option or flag '-%c' undefined "
+                   "[UNKNOWN_OPTION_ERROR]\n", optopt);
             return 1;
         }
     }
@@ -63,23 +64,26 @@ int parseOptionFlags(const int argc, char *argv[]) {
 
     // no argument found after command or option '-o'
     if (optind > argc - 1) {
-        printf("[ERROR] input file not found in arguments\n");
+        displayHelpGuide();
+        printf("ERROR: input file not found in arguments "
+               "[UNSPECIFIED_FILE_ERROR]\n");
         return 1;
     }
 
     // get only 1 file argument and fail if > 1
     if (optind < argc - 1) {
-        printf("[ERROR] unparsed argument/s detected: ");
+        printf("ERROR: unparsed argument/s detected: ");
         for (int i = optind + 1; i < argc; i++) {
             printf("%s ", argv[i]);
         }
-        printf("\n");
+        printf("[UNPARSED_ARGUMENTS_ERROR]\n");
         return 1;
     }
 
     // detect incomplete option flag
     if (argv[optind][0] == '-') {
-        printf("[ERROR] incomplete option flag '%s' on argument %d\n",
+        printf("ERROR: incomplete option flag '%s' on argument %d"
+               "[INCOMPLETE_FLAG_ERROR]\n",
                argv[optind], optind);
         return 1;
     }
@@ -90,6 +94,24 @@ int parseOptionFlags(const int argc, char *argv[]) {
         return 0;
     }
 
-    printf("[ERROR] uncaught error\n");
+    printf("ERROR: uncaught error [UNCAUGHT_ERROR]\n");
     return 1;
+}
+
+/// PRIVATE FUNCTIONS
+
+static void displayVersionInfo() {
+    printf("Renaisscript compiler version 0.1.0\n");
+}
+
+static void displayHelpGuide() {
+    printf("Usage: renaisscript [option...] [rensfile...].rens\n"
+           "\n"
+           "  -h                print help guide and exit successfully\n"
+           "  -o <filename>     write output to file\n"
+           "  -s <filename>     write symbol table to file\n"
+           "  -S                print symbol table to stdout\n"
+           "  -v                print version and exit successfully\n"
+           "\n"
+           "Report issues on github.com/steguiosaur/renaisscript/issues\n");
 }

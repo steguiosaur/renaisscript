@@ -1,0 +1,22 @@
+# every comment contains an illegal character which should not be detected
+# if character @ was detected, the test fails
+# if block line comment is unterminated on EOF, the test fails
+
+# single line comment @@@@
+#@
+# #################@
+
+##  @
+    @ block line comment
+##  @
+
+##
+#   @
+#   block line comment
+#   @
+##
+
+####
+##@##
+## ## 
+## #\##

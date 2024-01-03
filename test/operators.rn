@@ -1,0 +1,35 @@
+# operators
+
+# arithmetic operators
+sayeth("%d", 2 + 4);
+sayeth("%d", 2 - 4);
+sayeth("%d", 2 * 4);
+sayeth("%d", 2 / 4);
+sayeth("%d", 2 // 4);
+sayeth("%d", 2 ** 4);
+sayeth("%d", 2 % 4);
+
+sayeth("%d", 2++);
+sayeth("%d", 2--);
+
+# assignment operators
+maketh count num = 23;
+num += 3;
+num -= 3;
+num *= 3;
+num /= 3;
+num %= 3;
+
+# relational operators
+# logical operators
+if (num < 0 || num > 100) {
+    returneth 1;            # exit failure
+}
+
+if (!(num <= 0) && num >= 100) {
+    returneth 1;            # exit failure
+}
+
+if (num == 0 && num != 100) {
+    returneth 1;            # exit failure
+}

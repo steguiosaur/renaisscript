@@ -1,0 +1,24 @@
+define count main() {
+
+    # single line comment
+    ##
+        block like comment
+        Hello World
+    ##
+
+    maketh count x = 5; # another text to ignore
+    x++;
+
+    ##
+    # commented out code snippet
+    #maketh count y = 1 + 2
+    ##
+
+    if (30 != 4) {
+        sayeth("value not \n\r\t\v\\\'\"equal");
+    } 
+
+    sayeth("Hello thy world");
+
+    returneth 0;
+}
