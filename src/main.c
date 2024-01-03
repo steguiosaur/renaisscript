@@ -33,7 +33,9 @@ int main(const int argc, char **argv) {
 
             // for symbol table file output
             if (symbolout == 1 || symbolfile != NULL) {
-                collectStringOutput(tk_map[tok->type], tok->lexeme);
+                collectStringOutput(lexer->line_number,
+                                    lexer->index - lexer->curr_line_start + 1,
+                                    tk_map[tok->type], tok->lexeme);
             }
 
             tokenCleanup(&tok);
@@ -41,7 +43,7 @@ int main(const int argc, char **argv) {
         }
 
         if (symbolout) {
-           printCollectedStringOutput(); 
+            printCollectedStringOutput();
         }
 
         // write symbol table on specified symbol file in arguments
