@@ -144,14 +144,27 @@ Token *lexerGetNextToken(Lexer *lexer) {
             return tokenCreate(TK_OR, lexerGetLexAsString(lexer));
         }
         break;
-    case '\0':
-        return tokenCreate(TK_EOF, lexerGetLexAsString(lexer));
-    default:
-        break;
-    }
+    case '#':
+        // block line comment
+        if (lexerPeekNextChar(lexer) == '#') {
+            lexerReadNextChar(lexer);
+            while (lexerPeekNextChar(lexer) != '#') {
+                lexerReadNextChar(lexer);
 
-    // detect character literals
-    if (lexer->ch == '\'') {
+                if (lexerPeekNextChar(lexer) == '#') {
+                    lexerReadNextChar(lexer);
+                }
+            }
+            lexerReadNextChar(lexer);
+
+            return tokenCreate(TK_BLCKCOMMENT, lexerGetLexAsString(lexer));
+        }
+        // in-line comment
+        while (lexerPeekNextChar(lexer) != '\n') {
+            lexerReadNextChar(lexer);
+        }
+        return tokenCreate(TK_LINECOMMENT, lexerGetLexAsString(lexer));
+    case '\'': // detect character literals
         lexerReadNextChar(lexer);
 
         // error if character empty character constant
@@ -177,10 +190,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
             lexerReadNextChar(lexer);
         }
         return tokenCreate(TK_MULTICHERR, lexerGetLexAsString(lexer));
-    }
-
-    // detect string literals
-    if (lexer->ch == '"') {
+    case '"': // detext string literal
         lexerReadNextChar(lexer);
         while (lexer->ch != '"' && lexerPeekNextChar(lexer) != '\0') {
             if (lexer->ch == '\\' && lexerPeekNextChar(lexer) == '"') {
@@ -194,6 +204,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
         }
 
         return tokenCreate(TK_STREOFERR, lexerGetLexAsString(lexer));
+    case '\0':
+        return tokenCreate(TK_EOF, lexerGetLexAsString(lexer));
+    default:
+        break;
     }
 
     // detect identifier and keyword types
@@ -359,37 +373,10 @@ static Token *tokenCreate(TokenType type, char *lexeme) {
     return token;
 }
 
-// skip whitespaces, unneeded file escape sequences, and comments
+// skip whitespaces and unneeded file escape sequences
 static void lexerSkipWhitespace(Lexer *lexer) {
     while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
-           lexer->ch == '\r' || lexer->ch == '#') {
-
-        // track current line number
-        if (lexer->ch == '\n') {
-            lexer->line_number++;
-            lexer->curr_line_start = lexer->read_index;
-        }
-
-        // skip block line comment
-        if (lexer->ch == '#' && lexerPeekNextChar(lexer) == '#') {
-            lexerReadNextChar(lexer);
-            while (lexerPeekNextChar(lexer) != '#' &&
-                   lexerPeekNextChar(lexer) != '\0') {
-                lexerReadNextChar(lexer);
-                if (lexerPeekNextChar(lexer) == '#') {
-                    lexerReadNextChar(lexer);
-                }
-            }
-            lexerReadNextChar(lexer);
-        }
-
-        // skip single line comment
-        if (lexer->ch == '#') {
-            while (lexerPeekNextChar(lexer) != '\n') {
-                lexerReadNextChar(lexer);
-            }
-        }
-
+           lexer->ch == '\r') {
         lexerReadNextChar(lexer);
     }
 }
@@ -403,6 +390,12 @@ static void lexerReadNextChar(Lexer *lexer) {
     }
 
     lexer->read_index++;
+
+    // track current line number
+    if (lexer->ch == '\n') {
+        lexer->line_number++;
+        lexer->curr_line_start = lexer->read_index;
+    }
 }
 
 // view next char value in lexer
