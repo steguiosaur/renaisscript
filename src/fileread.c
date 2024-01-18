@@ -61,16 +61,15 @@ void cleanupFileContents() {
 }
 
 // continously collect token and lexeme strings on lexer
-void collectStringOutput(const unsigned long lineno, const unsigned long col,
-                         const char *tok_name, char *lexeme) {
-    unsigned long needed = snprintf(NULL, 0, "%-9lu %-8lu %-15s %-s\n", lineno,
-                                    col, tok_name, lexeme);
+void collectStringOutput(const char *tok_name, char *lexeme) {
+    unsigned long needed = snprintf(NULL, 0, "%-15s %-s\n", tok_name, lexeme);
     char *buffer = (char *)malloc(needed + 1);
-    sprintf(buffer, "%-9lu %-8lu %-15s %-s\n", lineno, col, tok_name, lexeme);
+    sprintf(buffer, "%-15s %-s\n", tok_name, lexeme);
 
     if (str_out == NULL) {
-        str_out = (char *)malloc(strlen(buffer) + 44);
-        strcpy(str_out, "LINENO.   COLUMN   TOKEN           LEXEME\n");
+        char *header = "TOKEN           LEXEME\n";
+        str_out = (char *)malloc(strlen(buffer) + strlen(header));
+        strcpy(str_out, header);
         strcat(str_out, buffer);
     } else {
         str_out =

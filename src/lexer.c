@@ -148,12 +148,20 @@ Token *lexerGetNextToken(Lexer *lexer) {
             return tokenCreate(TK_OR, lexerGetLexAsString(lexer));
         }
         return tokenCreate(TK_PIPE, lexerGetLexAsString(lexer));
+    case '\0':
+        return tokenCreate(TK_EOF, lexerGetLexAsString(lexer));
     case '#':
         // block line comment
         if (lexerPeekNextChar(lexer) == '#') {
             lexerReadNextChar(lexer);
             while (lexerPeekNextChar(lexer) != '#') {
+
                 lexerReadNextChar(lexer);
+                // track current line number
+                if (lexer->ch == '\n') {
+                    lexer->line_number++;
+                    lexer->curr_line_start = lexer->read_index;
+                }
 
                 if (lexerPeekNextChar(lexer) == '#') {
                     lexerReadNextChar(lexer);
@@ -194,7 +202,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
             lexerReadNextChar(lexer);
         }
         return tokenCreate(TK_MULTICHERR, lexerGetLexAsString(lexer));
-    case '"': // detext string literal
+    case '"': // detect string literal
         lexerReadNextChar(lexer);
         while (lexer->ch != '"' && lexerPeekNextChar(lexer) != '\0') {
             if (lexer->ch == '\\' && lexerPeekNextChar(lexer) == '"') {
@@ -208,8 +216,6 @@ Token *lexerGetNextToken(Lexer *lexer) {
         }
 
         return tokenCreate(TK_STREOFERR, lexerGetLexAsString(lexer));
-    case '\0':
-        return tokenCreate(TK_EOF, lexerGetLexAsString(lexer));
     default:
         break;
     }
@@ -381,6 +387,13 @@ static Token *tokenCreate(TokenType type, char *lexeme) {
 static void lexerSkipWhitespace(Lexer *lexer) {
     while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
            lexer->ch == '\r') {
+
+        // track current line number
+        if (lexer->ch == '\n') {
+            lexer->line_number++;
+            lexer->curr_line_start = lexer->read_index;
+        }
+
         lexerReadNextChar(lexer);
     }
 }
@@ -394,12 +407,6 @@ static void lexerReadNextChar(Lexer *lexer) {
     }
 
     lexer->read_index++;
-
-    // track current line number
-    if (lexer->ch == '\n') {
-        lexer->line_number++;
-        lexer->curr_line_start = lexer->read_index;
-    }
 }
 
 // view next char value in lexer
