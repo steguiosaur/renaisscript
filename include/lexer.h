@@ -5,23 +5,38 @@
 
 // token types
 typedef enum {
+    // error tokens
     TK_ILLEGALCHR,
     TK_EMPTYCHERR,
     TK_MULTICHERR,
     TK_FLOATERR,
     TK_STREOFERR,
+
+    // end of file
     TK_EOF,
+
+    // comments
     TK_BLCKCOMMENT,
     TK_LINECOMMENT,
-    TK_IDENTIFIER,
+
+    // literals
     TK_CHARACLIT,
     TK_STRINGLIT,
     TK_INTLIT,
     TK_FLTLIT,
+
+    // symbols
+    TK_AT,
+    TK_TILDE,
+    TK_PIPE,
     TK_AMPERSAND,
+
+    // logical operator
     TK_AND,
     TK_OR,
     TK_BANG,
+
+    // arithmetic operator
     TK_PLUS,
     TK_MINUS,
     TK_ASTERISK,
@@ -29,6 +44,8 @@ typedef enum {
     TK_SLASH,
     TK_FLOORDIV,
     TK_MODULO,
+
+    // assignment operator
     TK_ASSIGN,
     TK_ASSIGNINC,
     TK_ASSIGNDEC,
@@ -37,12 +54,16 @@ typedef enum {
     TK_ASSIGNMOD,
     TK_INCREMENT,
     TK_DECREMENT,
+
+    // relational operator
     TK_EQUAL,
     TK_GT,
     TK_GEQUAL,
     TK_LT,
     TK_LEQUAL,
     TK_NOTEQUAL,
+
+    // delimeters and brackets
     TK_COMMA,
     TK_DOT,
     TK_SEMICOLON,
@@ -53,26 +74,41 @@ typedef enum {
     TK_RBRACKET,
     TK_LCURLY,
     TK_RCURLY,
+
+    // data types
     TK_INT,
     TK_CHAR,
     TK_FLOAT,
     TK_DOUBLE,
     TK_BOOL,
     TK_VOID,
-    TK_GOTO,
-    TK_SWITCH,
-    TK_CASE,
-    TK_BREAK,
+
+    // etc keywords, noise words
+    TK_IDENTIFIER,
+    TK_VOLATILE,
+    TK_REGISTER,
+
+    // stdin and stdout
     TK_OUT,
     TK_IN,
+
+    // tags
     TK_FUNCTION,
     TK_LET,
+
+    // boolean
     TK_TRUE,
     TK_FALSE,
+
+    // loops and conditionals
     TK_IF,
     TK_ELSE,
     TK_WHILE,
     TK_CONTINUE,
+    TK_GOTO,
+    TK_SWITCH,
+    TK_CASE,
+    TK_BREAK,
     TK_RETURN,
 } TokenType;
 
@@ -116,11 +152,13 @@ static const char *const tk_map[] = {
     "TK_EOF",
     "TK_BLCKCOMMENT",
     "TK_LINECOMMENT",
-    "TK_IDENTIFIER",
     "TK_CHARACLIT",
     "TK_STRINGLIT",
     "TK_INTLIT",
     "TK_FLTLIT",
+    "TK_AT",
+    "TK_TILDE",
+    "TK_PIPE",
     "TK_AMPERSAND",
     "TK_AND",
     "TK_OR",
@@ -162,10 +200,9 @@ static const char *const tk_map[] = {
     "TK_DOUBLE",
     "TK_BOOL",
     "TK_VOID",
-    "TK_GOTO",
-    "TK_SWITCH",
-    "TK_CASE",
-    "TK_BREAK",
+    "TK_IDENTIFIER",
+    "TK_VOLATILE",
+    "TK_REGISTER",
     "TK_OUT",
     "TK_IN",
     "TK_FUNCTION",
@@ -176,6 +213,10 @@ static const char *const tk_map[] = {
     "TK_ELSE",
     "TK_WHILE",
     "TK_CONTINUE",
+    "TK_GOTO",
+    "TK_SWITCH",
+    "TK_CASE",
+    "TK_BREAK",
     "TK_RETURN",
 };
 

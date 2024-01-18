@@ -62,6 +62,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
         return tokenCreate(TK_SEMICOLON, lexerGetLexAsString(lexer));
     case ':':
         return tokenCreate(TK_COLON, lexerGetLexAsString(lexer));
+    case '@':
+        return tokenCreate(TK_AT, lexerGetLexAsString(lexer));
+    case '~':
+        return tokenCreate(TK_TILDE, lexerGetLexAsString(lexer));
     case '%':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
@@ -143,7 +147,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
             lexerReadNextChar(lexer);
             return tokenCreate(TK_OR, lexerGetLexAsString(lexer));
         }
-        break;
+        return tokenCreate(TK_PIPE, lexerGetLexAsString(lexer));
     case '#':
         // block line comment
         if (lexerPeekNextChar(lexer) == '#') {
