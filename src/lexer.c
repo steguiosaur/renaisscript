@@ -198,7 +198,7 @@ Token *lexerGetNextToken(Lexer *lexer) {
             return tokenCreate(TK_CHARACLIT, lexerGetLexAsString(lexer));
         }
 
-        if (lexer->ch != '\'') {
+        while (lexer->ch != '\'' && lexer->ch != '\0') {
             lexerReadNextChar(lexer);
         }
         return tokenCreate(TK_MULTICHERR, lexerGetLexAsString(lexer));
