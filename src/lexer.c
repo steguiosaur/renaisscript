@@ -485,7 +485,7 @@ static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len) {
       }
       break;
 
-    // DEFINE
+    // DEFINE - DITTO
     case 'd':
       switch (ident[1]) {
         case 'e':
@@ -502,6 +502,20 @@ static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len) {
                   }
               }
           }
+          break;
+
+        case 'i':
+          switch (ident[2]) {
+            case 't':
+              switch (ident[3]) {
+                case 't':
+                  switch (ident[4]) {
+                    case 'o':
+                      return TK_FOR;
+                  }
+              }
+          }
+          break;
       }
       break;
 
