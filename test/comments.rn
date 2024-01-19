@@ -3,12 +3,12 @@
 # if block line comment is unterminated on EOF, the test fails
 
 # single line comment @@@@
-#@
+#
 # #################@
 
-##  @
-    @ block line comment
-##  @
+            ##  @
+                @ block line comment
+            ## sayeth
 
 ##
 #   @
