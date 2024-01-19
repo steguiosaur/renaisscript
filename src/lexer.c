@@ -62,6 +62,10 @@ Token *lexerGetNextToken(Lexer *lexer) {
         return tokenCreate(TK_SEMICOLON, lexerGetLexAsString(lexer));
     case ':':
         return tokenCreate(TK_COLON, lexerGetLexAsString(lexer));
+    case '@':
+        return tokenCreate(TK_AT, lexerGetLexAsString(lexer));
+    case '~':
+        return tokenCreate(TK_TILDE, lexerGetLexAsString(lexer));
     case '%':
         if (lexerPeekNextChar(lexer) == '=') {
             lexerReadNextChar(lexer);
@@ -143,15 +147,36 @@ Token *lexerGetNextToken(Lexer *lexer) {
             lexerReadNextChar(lexer);
             return tokenCreate(TK_OR, lexerGetLexAsString(lexer));
         }
-        break;
+        return tokenCreate(TK_PIPE, lexerGetLexAsString(lexer));
     case '\0':
         return tokenCreate(TK_EOF, lexerGetLexAsString(lexer));
-    default:
-        break;
-    }
+    case '#':
+        // block line comment
+        if (lexerPeekNextChar(lexer) == '#') {
+            lexerReadNextChar(lexer);
+            while (lexerPeekNextChar(lexer) != '#') {
 
-    // detect character literals
-    if (lexer->ch == '\'') {
+                lexerReadNextChar(lexer);
+                // track current line number
+                if (lexer->ch == '\n') {
+                    lexer->line_number++;
+                    lexer->curr_line_start = lexer->read_index;
+                }
+
+                if (lexerPeekNextChar(lexer) == '#') {
+                    lexerReadNextChar(lexer);
+                }
+            }
+            lexerReadNextChar(lexer);
+
+            return tokenCreate(TK_BLCKCOMMENT, lexerGetLexAsString(lexer));
+        }
+        // in-line comment
+        while (lexerPeekNextChar(lexer) != '\n') {
+            lexerReadNextChar(lexer);
+        }
+        return tokenCreate(TK_LINECOMMENT, lexerGetLexAsString(lexer));
+    case '\'': // detect character literals
         lexerReadNextChar(lexer);
 
         // error if character empty character constant
@@ -173,14 +198,11 @@ Token *lexerGetNextToken(Lexer *lexer) {
             return tokenCreate(TK_CHARACLIT, lexerGetLexAsString(lexer));
         }
 
-        if (lexer->ch != '\'') {
+        while (lexer->ch != '\'' && lexer->ch != '\0') {
             lexerReadNextChar(lexer);
         }
         return tokenCreate(TK_MULTICHERR, lexerGetLexAsString(lexer));
-    }
-
-    // detect string literals
-    if (lexer->ch == '"') {
+    case '"': // detect string literal
         lexerReadNextChar(lexer);
         while (lexer->ch != '"' && lexerPeekNextChar(lexer) != '\0') {
             if (lexer->ch == '\\' && lexerPeekNextChar(lexer) == '"') {
@@ -194,6 +216,8 @@ Token *lexerGetNextToken(Lexer *lexer) {
         }
 
         return tokenCreate(TK_STREOFERR, lexerGetLexAsString(lexer));
+    default:
+        break;
     }
 
     // detect identifier and keyword types
@@ -359,35 +383,15 @@ static Token *tokenCreate(TokenType type, char *lexeme) {
     return token;
 }
 
-// skip whitespaces, unneeded file escape sequences, and comments
+// skip whitespaces and unneeded file escape sequences
 static void lexerSkipWhitespace(Lexer *lexer) {
     while (lexer->ch == ' ' || lexer->ch == '\t' || lexer->ch == '\n' ||
-           lexer->ch == '\r' || lexer->ch == '#') {
+           lexer->ch == '\r') {
 
         // track current line number
         if (lexer->ch == '\n') {
             lexer->line_number++;
             lexer->curr_line_start = lexer->read_index;
-        }
-
-        // skip block line comment
-        if (lexer->ch == '#' && lexerPeekNextChar(lexer) == '#') {
-            lexerReadNextChar(lexer);
-            while (lexerPeekNextChar(lexer) != '#' &&
-                   lexerPeekNextChar(lexer) != '\0') {
-                lexerReadNextChar(lexer);
-                if (lexerPeekNextChar(lexer) == '#') {
-                    lexerReadNextChar(lexer);
-                }
-            }
-            lexerReadNextChar(lexer);
-        }
-
-        // skip single line comment
-        if (lexer->ch == '#') {
-            while (lexerPeekNextChar(lexer) != '\n') {
-                lexerReadNextChar(lexer);
-            }
         }
 
         lexerReadNextChar(lexer);
@@ -436,89 +440,393 @@ static int isValidNumber(const char chr) { return '0' <= chr && '9' >= chr; }
 
 // detect if given identifier is a reserved keyword and return the type
 static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len) {
-    if (strncmp(ident, "maketh", len) == 0) {
-        return TK_LET;
-    }
 
-    if (strncmp(ident, "define", len) == 0) {
-        return TK_FUNCTION;
-    }
+  switch (ident[0]) {
 
-    if (strncmp(ident, "yay", len) == 0) {
-        return TK_TRUE;
-    }
+    // CASE - CEASE - COUNT
+    case 'c':
+      switch (ident[1]) {
+        case 'a':
+          switch (ident[2]) {
+            case 's':
+              switch (ident[3]) {
+                case 'e':
+                  return TK_CASE;
+              }
+          }
+          break;
 
-    if (strncmp(ident, "nay", len) == 0) {
-        return TK_FALSE;
-    }
+        case 'e':
+          switch (ident[2]) {
+            case 'a':
+              switch (ident[3]) {
+                case 's':
+                  switch (ident[4]) {
+                    case 'e':
+                      return TK_BREAK;
+                  }
+              }
+          }
+          break;
 
-    if (strncmp(ident, "if", len) == 0) {
-        return TK_IF;
-    }
+        case 'o':
+          switch (ident[2]) {
+            case 'u':
+              switch (ident[3]) {
+                case 'n':
+                  switch (ident[4]) {
+                    case 't':
+                      return TK_INT;
+                  }
+              }
+          }
+          break;
 
-    if (strncmp(ident, "else", len) == 0) {
-        return TK_ELSE;
-    }
+      }
+      break;
 
-    if (strncmp(ident, "returneth", len) == 0) {
-        return TK_RETURN;
-    }
+    // DEFINE
+    case 'd':
+      switch (ident[1]) {
+        case 'e':
+          switch (ident[2]) {
+            case 'f':
+              switch (ident[3]) {
+                case 'i':
+                  switch (ident[4]) {
+                    case 'n':
+                      switch (ident[5]) {
+                        case 'e':
+                          return TK_FUNCTION;
+                      }
+                  }
+              }
+          }
+      }
+      break;
 
-    if (strncmp(ident, "sayeth", len) == 0) {
-        return TK_OUT;
-    }
+    // ELSE
+    case 'e':
+      switch (ident[1]) {
+        case 'l':
+          switch (ident[2]) {
+            case 's':
+              switch (ident[3]) {
+                case 'e':
+                  return TK_ELSE;
+              }
+          }
+      }
+      break;
 
-    if (strncmp(ident, "heareth", len) == 0) {
-        return TK_IN;
-    }
+    // FRACTION
+    case 'f':
+      switch (ident[1]) {
+        case 'r':
+          switch (ident[2]) {
+            case 'a':
+              switch (ident[3]) {
+                case 'c':
+                  switch (ident[4]) {
+                    case 't':
+                      switch (ident[5]) {
+                        case 'i':
+                          switch (ident[6]) {
+                            case 'o':
+                              switch (ident[7]) {
+                                case 'n':
+                                  return TK_DOUBLE;
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+      break;
 
-    if (strncmp(ident, "count", len) == 0) {
-        return TK_INT;
-    }
+    // GLYPH
+    case 'g':
+      switch (ident[1]) {
+        case 'l':
+          switch (ident[2]) {
+            case 'y':
+              switch (ident[3]) {
+                case 'p':
+                  switch (ident[4]) {
+                    case 'h':
+                      return TK_CHAR;
+                  }
+              }
+          }
+      }
+      break;
 
-    if (strncmp(ident, "glyph", len) == 0) {
-        return TK_CHAR;
-    }
+    // HEARETH
+    case 'h':
+      switch (ident[1]) {
+        case 'e':
+          switch (ident[2]) {
+            case 'a':
+              switch (ident[3]) {
+                case 'r':
+                  switch (ident[4]) {
+                    case 'e':
+                      switch (ident[5]) {
+                        case 't':
+                          switch (ident[6]) {
+                            case 'h':
+                              return TK_IN;
+                          }
+                      }
+                  }
+              }
+          }
+      }
+      break;
 
-    if (strncmp(ident, "portion", len) == 0) {
-        return TK_FLOAT;
-    }
+    // IF
+    case 'i':
+      switch (ident[1]) {
+        case 'f':
+          return TK_IF;
+      }
+      break;
 
-    if (strncmp(ident, "fraction", len) == 0) {
-        return TK_DOUBLE;
-    }
+    // MAKETH
+    case 'm':
+      switch (ident[1]) {
+        case 'a':
+          switch (ident[2]) {
+            case 'k':
+              switch (ident[3]) {
+                case 'e':
+                  switch (ident[4]) {
+                    case 't':
+                      switch (ident[5]) {
+                        case 'h':
+                          return TK_LET;
+                      }
+                  }
+              }
+          }
+      }
+      break;
 
-    if (strncmp(ident, "verdict", len) == 0) {
-        return TK_BOOL;
-    }
+    // NAY - NOUGHT
+    case 'n':
+      switch (ident[1]) {
+        case 'a':
+          switch (ident[2]) {
+            case 'y':
+              return TK_FALSE;
+          }
+          break;
+        case 'o':
+          switch (ident[2]) {
+            case 'u':
+              switch (ident[3]) {
+                case 'g':
+                  switch (ident[4]) {
+                    case 'h':
+                      switch (ident[5]) {
+                        case 't':
+                          return TK_VOID;
+                      }
+                  }
+              }
+          }
+      }
+      break;
 
-    if (strncmp(ident, "nought", len) == 0) {
-        return TK_VOID;
-    }
+    // PERSIST - PORTION
+    case 'p':
+      switch (ident[1]) {
+        case 'e':
+          switch (ident[2]) {
+            case 'r':
+              switch (ident[3]) {
+                case 's':
+                  switch (ident[4]) {
+                    case 'i':
+                      switch (ident[5]) {
+                        case 's':
+                          switch (ident[6]) {
+                            case 't':
+                              return TK_CONTINUE;
+                          }
+                      }
+                  }
+              }
+          }
+          break;
 
-    if (strncmp(ident, "thither", len) == 0) {
-        return TK_GOTO;
-    }
+        case 'o':
+          switch (ident[2]) {
+            case 'r':
+              switch (ident[3]) {
+                case 't':
+                  switch (ident[4]) {
+                    case 'i':
+                      switch (ident[5]) {
+                        case 'o':
+                          switch (ident[6]) {
+                            case 'n':
+                              return TK_FLOAT;
+                          }
+                      }
+                  }
+              }
+          }
+          break;
 
-    if (strncmp(ident, "switch", len) == 0) {
-        return TK_SWITCH;
-    }
+      }
+      break;
 
-    if (strncmp(ident, "case", len) == 0) {
-        return TK_CASE;
-    }
+    // REHEARSE - RETURNETH
+    case 'r':
+      switch (ident[1]) {
+        case 'e':
+          switch (ident[2]) {
+            case 'h':
+              switch (ident[3]) {
+                case 'e':
+                  switch (ident[4]){
+                    case 'a':
+                      switch (ident[5]){
+                        case 'r':
+                          switch (ident[6]){
+                            case 's':
+                              switch (ident[7]){
+                                case 'e':
+                                  return TK_WHILE;
+                              }
+                          }
+                      }
+                  }
+              }
+              break;
 
-    if (strncmp(ident, "cease", len) == 0) {
-        return TK_BREAK;
-    }
+            case 't':
+              switch (ident[3]) {
+                case 'u':
+                  switch (ident[4]) {
+                    case 'r':
+                      switch (ident[5]) {
+                        case 'n':
+                          switch (ident[6]) {
+                            case 'e':
+                              switch (ident[7]) {
+                                case 't':
+                                  switch (ident[8]) {
+                                    case 'h':
+                                      return TK_RETURN;
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+              break;
 
-    if (strncmp(ident, "rehearse", len) == 0) {
-        return TK_WHILE;
-    }
+          }
+      }
+      break;
 
-    if (strncmp(ident, "persist", len) == 0) {
-        return TK_CONTINUE;
-    }
+    // SAYETH - SWITCH
+    case 's':
+      switch (ident[1]) {
+        case 'a':
+          switch (ident[2]) {
+            case 'y':
+              switch (ident[3]) {
+                case 'e':
+                  switch (ident[4]) {
+                    case 't':
+                      switch (ident[5]) {
+                        case 'h':
+                          return TK_OUT;
+                      }
+                  }
+              }
+          }
+          break;
 
-    return TK_IDENTIFIER;
+        case 'w':
+          switch (ident[2]) {
+            case 'i':
+              switch (ident[3]) {
+                case 't':
+                  switch (ident[4]) {
+                    case 'c':
+                      switch (ident[5]) {
+                        case 'h':
+                          return TK_SWITCH;
+                      }
+                  }
+              }
+          }
+      }
+      break;
+
+    // THITHER
+    case 't':
+      switch (ident[1]) {
+        case 'h':
+          switch (ident[2]) {
+            case 'i':
+              switch (ident[3]) {
+                case 't':
+                  switch (ident[4]) {
+                    case 'h':
+                      switch (ident[5]) {
+                        case 'e':
+                          switch (ident[6]) {
+                            case 'r':
+                              return TK_GOTO;
+                          }
+                      }
+                  }
+              }
+          }
+      }
+      break;
+
+    // VERDICT
+    case 'v':
+      switch (ident[1]) {
+        case 'e':
+          switch (ident[2]) {
+            case 'r':
+              switch (ident[3]) {
+                case 'd':
+                  switch (ident[4]) {
+                    case 'i':
+                      switch (ident[5]) {
+                        case 'c':
+                          switch (ident[6]) {
+                            case 't':
+                              return TK_BOOL;
+                          }
+                      }
+                  }
+              }
+          }
+      }
+      break;
+
+    // YAY
+    case 'y':
+      switch (ident[1]) {
+        case 'a':
+          switch (ident[2]) {
+            case 'y':
+              return TK_TRUE;
+          }
+      }
+      break;
+
+  }
+
+  return TK_IDENTIFIER;
 }

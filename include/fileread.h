@@ -15,8 +15,7 @@ extern int getRensFileContents(const char *filename);
 void cleanupFileContents();
 
 // continously collect token and lexeme strings on lexer
-void collectStringOutput(unsigned long lineno, unsigned long col,
-                         const char *tok_name, char *lexeme);
+void collectStringOutput(const char *tok_name, char *lexeme);
 
 void printCollectedStringOutput();
 
