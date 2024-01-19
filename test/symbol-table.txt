@@ -1,33 +1,48 @@
 TOKEN           LEXEME
-TK_LINECOMMENT  # errors
+TK_FUNCTION     define
+TK_INT          count
+TK_IDENTIFIER   main
+TK_LPAREN       (
+TK_RPAREN       )
+TK_LCURLY       {
+TK_LINECOMMENT  # single line comment
+TK_BLCKCOMMENT  ##
+        block like comment
+        Hello World
+    ##
 TK_LET          maketh
-TK_CHAR         glyph
-TK_IDENTIFIER   empty_char_error
+TK_INT          count
+TK_IDENTIFIER   x
 TK_ASSIGN       =
-TK_EMPTYCHERR   
+TK_INTLIT       5
 TK_SEMICOLON    ;
-TK_LINECOMMENT  # character
-TK_LET          maketh
-TK_CHAR         glyph
-TK_IDENTIFIER   multi_char_error
-TK_ASSIGN       =
-TK_MULTICHERR   AA
+TK_LINECOMMENT  # another text to ignore
+TK_IDENTIFIER   x
+TK_INCREMENT    ++
 TK_SEMICOLON    ;
-TK_LINECOMMENT  # character
-TK_LET          maketh
-TK_FLOAT        portion
-TK_IDENTIFIER   average
-TK_ASSIGN       =
-TK_FLOATERR     90.41.234
+TK_BLCKCOMMENT  ##
+    # commented out code snippet
+    #maketh count y = 1 + 2
+    ##
+TK_IF           if
+TK_LPAREN       (
+TK_INTLIT       30
+TK_NOTEQUAL     !=
+TK_INTLIT       4
+TK_RPAREN       )
+TK_LCURLY       {
+TK_OUT          sayeth
+TK_LPAREN       (
+TK_STRINGLIT    value not \n\r\t\v\\\'\"equal
+TK_RPAREN       )
 TK_SEMICOLON    ;
-TK_LINECOMMENT  # float
-TK_AT           @
-TK_AT           @
-TK_AT           @
-TK_LET          maketh
-TK_CHAR         glyph
-TK_ASTERISK     *
-TK_IDENTIFIER   multi_char_error
-TK_ASSIGN       =
-TK_STREOFERR    ";                        # character
-
+TK_RCURLY       }
+TK_OUT          sayeth
+TK_LPAREN       (
+TK_STRINGLIT    Hello thy world
+TK_RPAREN       )
+TK_SEMICOLON    ;
+TK_RETURN       returneth
+TK_INTLIT       0
+TK_SEMICOLON    ;
+TK_RCURLY       }

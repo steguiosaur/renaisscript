@@ -520,6 +520,10 @@ static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len) {
         return TK_WHILE;
     }
 
+    if (strncmp(ident, "ditto", len) == 0) {
+        return TK_FOR;
+    }
+
     if (strncmp(ident, "persist", len) == 0) {
         return TK_CONTINUE;
     }
