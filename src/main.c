@@ -1,5 +1,6 @@
 #include "fileread.h" // char *file_contents
 #include "lexer.h"    // lexical analyzer and tokens
+#include "parser.h"    // syntax analyzer and parser
 #include "optflags.h" // char *inputfile, *outputfile
 
 #include <stdio.h>
@@ -30,6 +31,9 @@ int main(const int argc, char **argv) {
             if (lexerErrorHandler(lexer, tok, inputfile)) {
                 return_error = 1;
             }
+
+            // Parse Current Token
+            Parser *parser = initParser(tk_map[tok->type], tok->lexeme);
 
             // for symbol table file output
             if (symbolout == 1 || symbolfile != NULL) {
