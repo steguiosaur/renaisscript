@@ -15,7 +15,7 @@ typedef struct LexerStruct {
     char ch;
 } Lexer;
 
-// start lexical analysis
+// initialize lexical analysis
 Lexer *initLexer(const char *contents);
 
 // free lexer allocated memory
@@ -29,5 +29,8 @@ void tokenCleanup(Token **token);
 
 // pass tokens here to filter TK_ERR and TK_ILLEGAL types
 int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename);
+
+// start lexer process
+TokenList* startLexer(const char* contents, unsigned int* return_error);
 
 #endif // LEXER_H_

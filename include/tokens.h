@@ -195,4 +195,16 @@ static const char *const tk_map[] = {
     "TK_RETURN",
 };
 
+typedef struct TokenListStruct {
+    TokenType type;
+    char *lexeme;
+    struct TokenListStruct* next;
+} TokenList;
+
+TokenList* initTokenList(TokenType type, char *lexeme);
+
+void push(TokenList* node, TokenType type, char *lexeme);
+
+void display(TokenList* node);
+
 #endif // !TOKENS_H_
