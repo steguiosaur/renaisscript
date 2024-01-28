@@ -1,6 +1,8 @@
 // 'lexer.c' - lexical analyzer functionalities
 
 #include "lexer.h"
+#include "fileread.h"
+#include "optflags.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -441,406 +443,437 @@ static int isValidNumber(const char chr) { return '0' <= chr && '9' >= chr; }
 // detect if given identifier is a reserved keyword and return the type
 static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len) {
 
-  switch (ident[0]) {
+    switch (ident[0]) {
 
     // CASE - CEASE - COUNT
     case 'c':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'a':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 's':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'e':
-                  return TK_CASE;
-              }
-          }
-          break;
+                    return TK_CASE;
+                }
+            }
+            break;
 
         case 'e':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'a':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 's':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'e':
-                      return TK_BREAK;
-                  }
-              }
-          }
-          break;
+                        return TK_BREAK;
+                    }
+                }
+            }
+            break;
 
         case 'o':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'u':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'n':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 't':
-                      return TK_INT;
-                  }
-              }
-          }
-          break;
-
-      }
-      break;
+                        return TK_INT;
+                    }
+                }
+            }
+            break;
+        }
+        break;
 
     // DEFINE - DITTO
     case 'd':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'e':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'f':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'i':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'n':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'e':
-                          return TK_FUNCTION;
-                      }
-                  }
-              }
-          }
-          break;
+                            return TK_FUNCTION;
+                        }
+                    }
+                }
+            }
+            break;
 
         case 'i':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 't':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 't':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'o':
-                      return TK_FOR;
-                  }
-              }
-          }
-          break;
-      }
-      break;
+                        return TK_FOR;
+                    }
+                }
+            }
+            break;
+        }
+        break;
 
     // ELSE
     case 'e':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'l':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 's':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'e':
-                  return TK_ELSE;
-              }
-          }
-      }
-      break;
+                    return TK_ELSE;
+                }
+            }
+        }
+        break;
 
     // FRACTION
     case 'f':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'r':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'a':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'c':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 't':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'i':
-                          switch (ident[6]) {
+                            switch (ident[6]) {
                             case 'o':
-                              switch (ident[7]) {
+                                switch (ident[7]) {
                                 case 'n':
-                                  return TK_DOUBLE;
-                              }
-                          }
-                      }
-                  }
-              }
-          }
-      }
-      break;
+                                    return TK_DOUBLE;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        break;
 
     // GLYPH
     case 'g':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'l':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'y':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'p':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'h':
-                      return TK_CHAR;
-                  }
-              }
-          }
-      }
-      break;
+                        return TK_CHAR;
+                    }
+                }
+            }
+        }
+        break;
 
     // HEARETH
     case 'h':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'e':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'a':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'r':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'e':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 't':
-                          switch (ident[6]) {
+                            switch (ident[6]) {
                             case 'h':
-                              return TK_IN;
-                          }
-                      }
-                  }
-              }
-          }
-      }
-      break;
+                                return TK_IN;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        break;
 
     // IF
     case 'i':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'f':
-          return TK_IF;
-      }
-      break;
+            return TK_IF;
+        }
+        break;
 
     // MAKETH
     case 'm':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'a':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'k':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'e':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 't':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'h':
-                          return TK_LET;
-                      }
-                  }
-              }
-          }
-      }
-      break;
+                            return TK_LET;
+                        }
+                    }
+                }
+            }
+        }
+        break;
 
     // NAY - NOUGHT
     case 'n':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'a':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'y':
-              return TK_FALSE;
-          }
-          break;
+                return TK_FALSE;
+            }
+            break;
         case 'o':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'u':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'g':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'h':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 't':
-                          return TK_VOID;
-                      }
-                  }
-              }
-          }
-      }
-      break;
+                            return TK_VOID;
+                        }
+                    }
+                }
+            }
+        }
+        break;
 
     // PERSIST - PORTION
     case 'p':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'e':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'r':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 's':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'i':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 's':
-                          switch (ident[6]) {
+                            switch (ident[6]) {
                             case 't':
-                              return TK_CONTINUE;
-                          }
-                      }
-                  }
-              }
-          }
-          break;
+                                return TK_CONTINUE;
+                            }
+                        }
+                    }
+                }
+            }
+            break;
 
         case 'o':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'r':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 't':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'i':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'o':
-                          switch (ident[6]) {
+                            switch (ident[6]) {
                             case 'n':
-                              return TK_FLOAT;
-                          }
-                      }
-                  }
-              }
-          }
-          break;
-
-      }
-      break;
+                                return TK_FLOAT;
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        break;
 
     // REHEARSE - RETURNETH
     case 'r':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'e':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'h':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'e':
-                  switch (ident[4]){
+                    switch (ident[4]) {
                     case 'a':
-                      switch (ident[5]){
+                        switch (ident[5]) {
                         case 'r':
-                          switch (ident[6]){
+                            switch (ident[6]) {
                             case 's':
-                              switch (ident[7]){
+                                switch (ident[7]) {
                                 case 'e':
-                                  return TK_WHILE;
-                              }
-                          }
-                      }
-                  }
-              }
-              break;
+                                    return TK_WHILE;
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
 
             case 't':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'u':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'r':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'n':
-                          switch (ident[6]) {
+                            switch (ident[6]) {
                             case 'e':
-                              switch (ident[7]) {
+                                switch (ident[7]) {
                                 case 't':
-                                  switch (ident[8]) {
+                                    switch (ident[8]) {
                                     case 'h':
-                                      return TK_RETURN;
-                                  }
-                              }
-                          }
-                      }
-                  }
-              }
-              break;
-
-          }
-      }
-      break;
+                                        return TK_RETURN;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        break;
 
     // SAYETH - SWITCH
     case 's':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'a':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'y':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'e':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 't':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'h':
-                          return TK_OUT;
-                      }
-                  }
-              }
-          }
-          break;
+                            return TK_OUT;
+                        }
+                    }
+                }
+            }
+            break;
 
         case 'w':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'i':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 't':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'c':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'h':
-                          return TK_SWITCH;
-                      }
-                  }
-              }
-          }
-      }
-      break;
+                            return TK_SWITCH;
+                        }
+                    }
+                }
+            }
+        }
+        break;
 
     // THITHER
     case 't':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'h':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'i':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 't':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'h':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'e':
-                          switch (ident[6]) {
+                            switch (ident[6]) {
                             case 'r':
-                              return TK_GOTO;
-                          }
-                      }
-                  }
-              }
-          }
-      }
-      break;
+                                return TK_GOTO;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        break;
 
     // VERDICT
     case 'v':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'e':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'r':
-              switch (ident[3]) {
+                switch (ident[3]) {
                 case 'd':
-                  switch (ident[4]) {
+                    switch (ident[4]) {
                     case 'i':
-                      switch (ident[5]) {
+                        switch (ident[5]) {
                         case 'c':
-                          switch (ident[6]) {
+                            switch (ident[6]) {
                             case 't':
-                              return TK_BOOL;
-                          }
-                      }
-                  }
-              }
-          }
-      }
-      break;
+                                return TK_BOOL;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        break;
 
     // YAY
     case 'y':
-      switch (ident[1]) {
+        switch (ident[1]) {
         case 'a':
-          switch (ident[2]) {
+            switch (ident[2]) {
             case 'y':
-              return TK_TRUE;
-          }
-      }
-      break;
+                return TK_TRUE;
+            }
+        }
+        break;
+    }
 
-  }
+    return TK_IDENTIFIER;
+}
 
-  return TK_IDENTIFIER;
+Lexer *startLexer(char *file_contents, unsigned int* return_error) {
+    Lexer *lexer = initLexer(file_contents);
+
+    Token *tok = lexerGetNextToken(lexer);
+    while (tok->type != TK_EOF) {
+
+        // print error and exit fail if token type ERR and INVALID detected
+        if (lexerErrorHandler(lexer, tok, inputfile)) {
+            *return_error = 1;
+        }
+
+        // for symbol table file output
+        if (symbolout == 1 || symbolfile != NULL) {
+            collectStringOutput(tk_map[tok->type], tok->lexeme);
+        }
+
+        tokenCleanup(&tok);
+        tok = lexerGetNextToken(lexer);
+    }
+
+    if (symbolout) {
+        printCollectedStringOutput();
+    }
+
+    // write symbol table on specified symbol file in arguments
+    if (symbolfile != NULL) {
+        storeCollectedStringOutput(symbolfile);
+    }
+
+    tokenCleanup(&tok);
+    lexerCleanUp(&lexer);
+    cleanupCollectedString();
+    cleanupFileContents();
 }
