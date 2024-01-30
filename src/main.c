@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 
+
 int main(const int argc, char **argv) {
     // optflags.h - parse command line arguments
     if (parseOptionFlags(argc, argv)) {
@@ -32,13 +33,14 @@ int main(const int argc, char **argv) {
     // Parser* parser = startParser(lexer, return_error);
 
     Lexer* lexer = initLexer(file_contents);
-    Token* token = lexerGetNextToken(lexer);
+    Parser* parser = initParser(lexer);
+    AST* head = parser_parse(parser);
 
-    printf("%s\n", token->lexeme);
-    token = lexerGetNextToken(lexer);
-    printf("%s\n", token->lexeme);
+    printf("\nAST Type: %d\n", head->type);
+    printf("Number of Lines (Compound): %lu\n", head->compound_size);
 
-    
+    /* outputAST(head); */
+
 
     if (return_error) {
         return 1;

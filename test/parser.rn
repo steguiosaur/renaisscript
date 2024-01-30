@@ -1,1 +1,11 @@
-count x = 5;
+count a = 5;
+portion b = 1.2;
+fraction c = 2.333;
+glyph d = 'a';
+glyph* e = "Hello World";
+verdict f = yay;
+
+
+count main() {
+    count x = 5;
+}
