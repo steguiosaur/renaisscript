@@ -1,6 +1,7 @@
 #include "fileread.h" // char *file_contents
-#include "lexer.h"    // lexical analyzer and tokens
 #include "optflags.h" // char *inputfile, *outputfile
+#include "lexer.h"    // lexical analyzer and tokens
+#include "parser.h"    // lexical analyzer and tokens
 
 #include <stdio.h>
 
@@ -17,43 +18,29 @@ int main(const int argc, char **argv) {
         }
     }
 
-    unsigned int return_error = 0;
+    int return_error = 0;
+
+    if (file_contents == NULL) {
+        return 1;
+    }
 
     // process inputfile's characters
-    if (file_contents != NULL) {
-        Lexer *lexer = initLexer(file_contents);
+    /* Lexer* lexer = startLexer(file_contents, &return_error); */
+    /* Parser* parser = startParser(lexer, ) */
 
-        Token *tok = lexerGetNextToken(lexer);
-        while (tok->type != TK_EOF) {
 
-            // print error and exit fail if token type ERR and INVALID detected
-            if (lexerErrorHandler(lexer, tok, inputfile)) {
-                return_error = 1;
-            }
+    Lexer* lexer = initLexer(file_contents);
+    Parser* parser = initParser(lexer);
+    AST* root = parser_parse(parser);
 
-            // for symbol table file output
-            if (symbolout == 1 || symbolfile != NULL) {
-                collectStringOutput(tk_map[tok->type], tok->lexeme);
-            }
+    printf("%d\n", root->type);
+    printf("Hello World\n");
 
-            tokenCleanup(&tok);
-            tok = lexerGetNextToken(lexer);
-        }
 
-        if (symbolout) {
-            printCollectedStringOutput();
-        }
 
-        // write symbol table on specified symbol file in arguments
-        if (symbolfile != NULL) {
-            storeCollectedStringOutput(symbolfile);
-        }
 
-        tokenCleanup(&tok);
-        lexerCleanUp(&lexer);
-        cleanupCollectedString();
-        cleanupFileContents();
-    }
+
+
 
     if (return_error) {
         return 1;

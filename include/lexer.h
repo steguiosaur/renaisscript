@@ -30,4 +30,6 @@ void tokenCleanup(Token **token);
 // pass tokens here to filter TK_ERR and TK_ILLEGAL types
 int lexerErrorHandler(Lexer *lexer, Token *token, const char *filename);
 
+void startLexer(char* file_contents, int* return_error);
+
 #endif // LEXER_H_

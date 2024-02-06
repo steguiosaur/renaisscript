@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "fileread.h" // char *file_contents
+#include "optflags.h" // char *inputfile, *outputfile
 
 static Token *tokenCreate(TokenType type, char *lexeme);
 
@@ -843,4 +845,39 @@ static TokenType lexerIdReservedKeyword(const char *ident, unsigned long len) {
   }
 
   return TK_IDENTIFIER;
+}
+
+void startLexer(char* file_contents, int* return_error) {
+    Lexer* lexer = initLexer(file_contents);
+
+    Token* tok = lexerGetNextToken(lexer);
+    while (tok->type != TK_EOF) {
+
+        // print error and exit fail if token type ERR and INVALID detected
+        if (lexerErrorHandler(lexer, tok, inputfile)) {
+            *return_error = 1;
+        }
+
+        // for symbol table file output
+        if (symbolout == 1 || symbolfile != NULL) {
+            collectStringOutput(tk_map[tok->type], tok->lexeme);
+        }
+
+        tokenCleanup(&tok);
+        tok = lexerGetNextToken(lexer);
+    }
+
+    if (symbolout) {
+        printCollectedStringOutput();
+    }
+
+    // write symbol table on specified symbol file in arguments
+    if (symbolfile != NULL) {
+        storeCollectedStringOutput(symbolfile);
+    }
+
+    tokenCleanup(&tok);
+    lexerCleanUp(&lexer);
+    cleanupCollectedString();
+    cleanupFileContents();
 }

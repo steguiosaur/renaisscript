@@ -1,0 +1,3 @@
+char* name = "john doe";
+
+sayeth("Hello World");
