@@ -1,0 +1,564 @@
+#include "parser.h"
+#include "AST.h"
+#include "tokens.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+Parser* initParser(Lexer* lexer) {
+	Parser* parser = (Parser*)malloc(sizeof(Parser));
+    parser->lexer = lexer;
+    parser->current_token = lexerGetNextToken(lexer);
+    parser->prev_token = parser->current_token;
+
+	return parser;
+
+}
+
+// Expects a token
+void parser_eat(Parser* parser, int token_type) {
+	if (parser->current_token->type == token_type) {
+
+        printf("Eating: %s\n", parser->current_token->lexeme);
+
+        parser->prev_token = parser->current_token;
+        parser->current_token = lexerGetNextToken(parser->lexer);
+
+	} else {
+
+		printf(
+            "Unexpected Token: \"%s\", with type \"%s\" when needing \"%s\"\n",
+            parser->current_token->lexeme,
+            tk_map[parser->current_token->type],
+            tk_map[token_type]
+
+        );
+
+		// Immediately exit the program
+		exit(1);
+	}
+}
+
+AST* parser_parse(Parser* parser) {
+    return root(parser);
+}
+
+AST* root(Parser* parser) {
+
+    AST* compound = init_ast(AST_COMPOUND);
+    compound->compound_val = (AST**)malloc(sizeof(AST*));
+
+    AST* ast_statement = stmt(parser);
+    compound->compound_val[0] = ast_statement;
+    compound->compound_size += 1;
+
+    while (parser->current_token->type == TK_SEMICOLON) {
+
+        parser_eat(parser, TK_SEMICOLON);
+
+        AST* ast_statement = stmt(parser);
+        compound->compound_size += 1;
+        compound->compound_val = realloc(
+            compound->compound_val,
+            compound->compound_size * sizeof(AST*)
+        );
+        compound->compound_val[compound->compound_size - 1] = ast_statement;
+    }
+
+    return compound;
+}
+
+AST* stmt(Parser* parser) {
+    switch (parser->current_token->type) {
+
+        // Declarations
+        case TK_INT:
+        case TK_FLOAT:
+        case TK_DOUBLE:
+        case TK_CHAR:
+        case TK_BOOL:
+            return declarations(parser);
+            break;
+
+        // Statement Groups
+        case TK_IN:
+        case TK_OUT:
+        case TK_IDENTIFIER:
+        case TK_IF:
+        case TK_FOR:
+        case TK_WHILE:
+        case TK_RETURN:
+        case TK_GOTO:
+            return stmt_group(parser);
+            break;
+
+
+    }
+
+}
+
+AST* declarations(Parser* parser) {
+
+    switch (parser->current_token->type) {
+
+        case TK_INT:
+        case TK_FLOAT:
+        case TK_DOUBLE:
+        case TK_CHAR:
+        case TK_BOOL:
+            return var_stmt(parser);
+            break;
+    }
+}
+
+AST* stmt_group(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_IN:
+            return input_stmt(parser);
+            break;
+        case TK_OUT:
+            return output_stmt(parser);
+            break;
+        case TK_IDENTIFIER:
+            parser_eat(parser, TK_IDENTIFIER);
+            if (parser->current_token->type == TK_LPAREN) {
+                return func_callback(parser);
+            } else {
+                return var_stmt(parser);
+            }
+            break;
+        case TK_IF:
+            break;
+        case TK_FOR:
+            break;
+        case TK_WHILE:
+            break;
+        case TK_RETURN:
+            break;
+        case TK_GOTO:
+            break;
+    }
+}
+
+
+AST* input_stmt(Parser* parser) {
+
+    parser_eat(parser, TK_IN);
+
+    AST* ast_func_call = init_ast(AST_FUNC_CALL);
+    ast_func_call->func_call_name = parser->prev_token->lexeme;
+
+    parser_eat(parser, TK_LPAREN);
+
+    ast_func_call->func_call_args = (AST**)malloc(sizeof(AST*));
+
+    ast_func_call->func_call_args[0] = parser->current_token->lexeme;
+    ast_func_call->func_call_args_size += 1;
+
+    parser_eat(parser, TK_IDENTIFIER);
+    parser_eat(parser, TK_RPAREN);
+
+    // NEED RETURN
+
+}
+
+AST* output_stmt(Parser* parser) {
+    parser_eat(parser, TK_OUT);
+    parser_eat(parser, TK_LPAREN);
+    // ALPHASCRIPT
+    parser_eat(parser, TK_STRINGLIT);
+    parser_eat(parser, TK_RPAREN);
+
+    // NEED RETURN
+
+}
+
+AST* assignment_stmt(Parser* parser) {
+    parser_eat(parser, TK_IDENTIFIER);
+    parser_eat(parser, TK_ASSIGN);
+    return expr(parser);
+}
+AST* conditional_stmt(Parser* parser);
+AST* condition(Parser* parser);
+AST* iterative_stmt(Parser* parser);
+AST* for_stmt(Parser* parser);
+AST* while_stmt(Parser* parser);
+
+
+
+
+
+
+
+
+
+
+
+AST* func_callback(Parser* parser) {
+    AST* ast_func_call = init_ast(AST_FUNC_CALL);
+
+    ast_func_call->func_call_name = parser->prev_token->lexeme;
+    parser_eat(parser, TK_LPAREN);
+
+
+    ast_func_call->func_call_args = (AST**)malloc(sizeof(AST*));
+
+    AST* ast_expr = expr(parser);
+    ast_func_call->func_call_args[0] = ast_expr;
+    ast_func_call->func_call_args_size += 1;
+
+    while (parser->current_token->type == TK_COMMA) {
+
+        parser_eat(parser, TK_COMMA);
+
+        AST* ast_expr = expr(parser);
+        ast_func_call->func_call_args_size += 1;
+        ast_func_call->func_call_args = realloc(
+            ast_func_call->func_call_args, 
+            ast_func_call->func_call_args_size * sizeof(AST*)
+        );
+        ast_func_call->func_call_args
+            [ast_func_call->func_call_args_size - 1] = ast_expr;
+    }
+
+    parser_eat(parser, TK_RPAREN);
+
+    return ast_func_call;
+
+}
+
+
+AST* var_dec_stmt(Parser* parser) {
+
+    parser_eat(parser, TK_ASSIGN);
+
+    switch (parser->current_token->type) {
+        case TK_INTLIT:
+            return int_lit(parser);
+            break;
+        case TK_FLTLIT:
+            return float_lit(parser);
+            break;
+        /* case TK_DOUBLE: */
+        /*     return double_lit(parser); */
+        /*     break; */
+        case TK_CHARACLIT:
+            return char_lit(parser);
+            break;
+        case TK_STRINGLIT:
+            return string_lit(parser);
+            break;
+        case TK_TRUE:
+        case TK_FALSE:
+            return bool_lit(parser);
+            break;
+    
+    }
+}
+
+AST* lit(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_INTLIT:
+            return int_lit(parser);
+            break;
+        case TK_FLTLIT:
+            return float_lit(parser);
+            break;
+            /* return double_lit(parser); */
+            /* break; */
+        case TK_CHARACLIT:
+            return char_lit(parser);
+            break;
+        case TK_STRINGLIT:
+            return string_lit(parser);
+            break;
+        case TK_TRUE:
+        case TK_FALSE:
+            return bool_lit(parser);
+            break;
+
+    }
+}
+
+AST* int_lit(Parser* parser) {
+    AST* ast_int = init_ast(AST_INT);
+    ast_int->int_val = atoi(parser->current_token->lexeme);
+
+    parser_eat(parser, TK_INTLIT);
+
+    return ast_int;
+}
+
+AST* float_lit(Parser* parser) {
+    AST* ast_float = init_ast(AST_FLOAT);
+    ast_float->float_val = atof(parser->current_token->lexeme);
+    parser_eat(parser, TK_FLTLIT);
+
+    return ast_float;
+}
+
+/* AST* double_lit(Parser* parser) { */
+/*     AST* ast_double = init_ast(AST_DOUBLE); */
+/*     ast_double->double_val = atof(parser->current_token->lexeme); */
+/*     parser_eat(parser, TK_DOUBLE); */
+
+/*     return ast_double; */
+/* } */
+
+AST* char_lit(Parser* parser) {
+    AST* ast_char = init_ast(AST_CHAR);
+    ast_char->char_val = parser->current_token->lexeme[0];
+    parser_eat(parser, TK_CHARACLIT);
+
+    return ast_char;
+}
+
+AST* string_lit(Parser* parser) {
+    AST* ast_string = init_ast(AST_STRING);
+    ast_string->string_val = parser->current_token->lexeme;
+    parser_eat(parser, TK_STRINGLIT);
+
+    return ast_string;
+
+}
+
+AST* bool_lit(Parser* parser) {
+    AST* ast_bool = init_ast(AST_BOOL);
+    if (strcmp(parser->current_token->lexeme, "yay") == 0) {
+        ast_bool->bool_val = 1;
+        parser_eat(parser, TK_TRUE);
+    } else if (strcmp(parser->current_token->lexeme, "nay") == 0) {
+        ast_bool->bool_val = 0;
+        parser_eat(parser, TK_FALSE);
+    }
+
+    return ast_bool;
+
+}
+
+
+
+AST* expr(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_INTLIT:
+        case TK_FLTLIT:
+        case TK_CHARACLIT:
+        case TK_STRINGLIT:
+        case TK_TRUE:
+        case TK_FALSE:
+            return term(parser);
+            break;
+        case TK_IDENTIFIER:
+    }
+}
+
+AST* term(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_INTLIT:
+            parser_eat(parser, TK_INTLIT);
+
+            if (parser->current_token->type == TK_PLUS) { // lit +
+                parser_eat(parser, TK_PLUS);
+                if (parser->current_token->type == TK_PLUS) { // lit ++
+                    parser_eat(parser, TK_PLUS);
+                    return factor(parser);
+                } else {
+                    return factor(parser);
+                }
+            } else if (parser->current_token->type == TK_MINUS) { // lit --
+                parser_eat(parser, TK_MINUS);
+                if (parser->current_token->type == TK_MINUS) { // lit --
+                    parser_eat(parser, TK_MINUS);
+                    return factor(parser);
+                } else {
+                    return factor(parser);
+                }
+            } else {
+                return factor(parser);
+            }
+
+            break;
+        case TK_FLTLIT:
+            parser_eat(parser, TK_FLTLIT);
+            break;
+        case TK_CHARACLIT:
+            parser_eat(parser, TK_CHARACLIT);
+            break;
+        case TK_STRINGLIT:
+            parser_eat(parser, TK_STRINGLIT);
+            break;
+        case TK_TRUE:
+            parser_eat(parser, TK_TRUE);
+            break;
+        case TK_FALSE:
+            parser_eat(parser, TK_FALSE);
+            break;
+    }
+
+
+    
+}
+
+AST* factor(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_INTLIT:
+        case TK_FLTLIT:
+        case TK_CHARACLIT:
+        case TK_STRINGLIT:
+        case TK_TRUE:
+        case TK_FALSE:
+            return expo(parser);
+            break;
+    }
+
+}
+
+AST* expo(Parser* parser) {
+
+}
+
+AST* primary_expr(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_INTLIT:
+        case TK_FLTLIT:
+        case TK_CHARACLIT:
+        case TK_STRINGLIT:
+        case TK_TRUE:
+        case TK_FALSE:
+            return term(parser);
+    }
+
+}
+
+AST* func_declaration(Parser* parser) {
+    AST* ast_func_def = init_ast(AST_FUNC_DEF);
+
+    ast_func_def->func_def_name = parser->prev_token->lexeme;
+    parser_eat(parser, TK_LPAREN);
+
+    ast_func_def->func_def_args = (AST**)malloc(sizeof(AST*));
+
+    AST* ast_arg = var_stmt(parser);
+    ast_func_def->func_def_args[0] = ast_arg;
+    ast_func_def->func_def_args_size += 1;
+
+    while (parser->current_token->type == TK_COMMA) {
+        parser_eat(parser, TK_COMMA);
+
+        AST* ast_arg = var_stmt(parser);
+        ast_func_def->func_def_args_size += 1;
+        ast_func_def->func_def_args = realloc(
+            ast_func_def->func_def_args,
+            ast_func_def->func_def_args_size * sizeof(AST*)
+        );
+
+    }
+
+    parser_eat(parser, TK_RPAREN);
+
+    return ast_func_def;
+}
+
+AST* var_stmt(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_INT:
+            return int_declare(parser);
+            break;
+        case TK_FLOAT:
+            return float_declare(parser);
+            break;
+        case TK_DOUBLE:
+            return double_declare(parser);
+            break;
+        case TK_CHAR:
+            return char_declare(parser);
+            break;
+        case TK_BOOL:
+            return bool_declare(parser);
+            break;
+
+    }
+}
+
+AST* int_declare(Parser* parser) {
+
+    parser_eat(parser, TK_INT); // count
+    parser_eat(parser, TK_IDENTIFIER); // count id
+
+    if (parser->current_token->type == TK_LPAREN) {
+        return func_declaration(parser);
+    } else if (parser->current_token->type == TK_ASSIGN){
+        return var_dec_stmt(parser);
+    } else {
+        return (AST*)0;
+    }
+
+}
+AST* float_declare(Parser* parser) {
+
+    parser_eat(parser, TK_FLOAT); // portion
+    parser_eat(parser, TK_IDENTIFIER); // portion id
+
+    if (parser->current_token->type == TK_LPAREN) {
+        return func_declaration(parser);
+    } else if (parser->current_token->type == TK_ASSIGN){
+        return var_dec_stmt(parser);
+    } else {
+        return (AST*)0;
+    }
+
+}
+AST* double_declare(Parser* parser) {
+
+    parser_eat(parser, TK_DOUBLE); // fraction
+    parser_eat(parser, TK_IDENTIFIER); // fraction id
+
+    if (parser->current_token->type == TK_LPAREN) {
+        return func_declaration(parser);
+    } else if (parser->current_token->type == TK_ASSIGN){
+        return var_dec_stmt(parser);
+    } else {
+        return (AST*)0;
+    }
+
+}
+AST* char_declare(Parser* parser) {
+
+    parser_eat(parser, TK_CHAR); // glyph
+
+    if (parser->current_token->type == TK_ASTERISK) {
+        parser_eat(parser, TK_ASTERISK); // glyph*
+    }
+
+    parser_eat(parser, TK_IDENTIFIER); // glyph id
+
+    if (parser->current_token->type == TK_LPAREN) {
+        return func_declaration(parser);
+    } else if (parser->current_token->type == TK_ASSIGN){
+        return var_dec_stmt(parser);
+    } else {
+        return (AST*)0;
+    }
+
+}
+AST* bool_declare(Parser* parser) {
+
+    parser_eat(parser, TK_BOOL); // verdict
+    parser_eat(parser, TK_IDENTIFIER); // verdict id
+
+    if (parser->current_token->type == TK_LPAREN) {
+        return func_declaration(parser);
+    } else if (parser->current_token->type == TK_ASSIGN){
+        return var_dec_stmt(parser);
+    } else {
+        return (AST*)0;
+    }
+
+}
+
+AST* id(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_IN:
+            
+}

@@ -5,7 +5,5 @@ glyph d = 'a';
 glyph* e = "Hello World";
 verdict f = yay;
 
-
-count main() {
-    count x = 5;
-}
+heareth("Hello");
+heareth(a);

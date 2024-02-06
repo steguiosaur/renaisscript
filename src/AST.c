@@ -14,6 +14,11 @@ AST* init_ast(int type) {
     // AST_VAR
     ast->var_name = (void*)0;
 
+    // AST_FUNC_DEF
+    char* func_def_name = (void*)0;
+	struct ASTStruct** func_def_args = (void*)0;
+	size_t func_def_args_size = 0;
+
     // AST_FUNC_CALL
     ast->func_call_name = (void*)0;
     ast->func_call_args = (void*)0;
