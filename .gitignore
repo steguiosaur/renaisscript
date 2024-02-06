@@ -1,3 +1,7 @@
 build/
 .cache/
 Testing/
+
+.clangd*
+
+compile_commands.json

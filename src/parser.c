@@ -92,6 +92,10 @@ AST* stmt(Parser* parser) {
         case TK_GOTO:
             return stmt_group(parser);
             break;
+
+        // Functions
+        case TK_FUNCTION:
+            return func_declaration(parser);
     }
 }
 
@@ -229,7 +233,35 @@ AST* func_callback(Parser* parser) {
 
 }
 
-AST* func_declaration(Parser* parser);
+AST* func_declaration(Parser* parser) {
+    parser_eat(parser, TK_FUNCTION);
+    switch (parser->current_token->type) {
+
+        case TK_INT:
+            return int_func_declare(parser);
+            break;
+        case TK_FLOAT:
+            return float_func_declare(parser);
+            break;
+        case TK_DOUBLE:
+            return double_func_declare(parser);
+            break;
+        case TK_CHAR:
+            parser_eat(parser, TK_CHAR);
+
+            if (parser->current_token->type == TK_ASTERISK) {
+                return string_func_declare(parser);
+            } else {
+                return char_func_declare(parser);
+            }
+
+            break;
+        case TK_BOOL:
+            return bool_func_declare(parser);
+            break;
+
+    }
+}
 AST* compound_stmt(Parser* parser);
 AST* var_dec_stmt(Parser* parser);
 AST* var_init_stmt(Parser* parser);
@@ -392,6 +424,19 @@ AST* expo(Parser* parser) {
 
 AST* primary_expr(Parser* parser) {
 
+    switch (parser->current_token->type) {
+        case TK_IDENTIFIER:
+            break;
+        case TK_INTLIT:
+        case TK_FLTLIT:
+        case TK_CHARACLIT:
+        case TK_STRINGLIT:
+        case TK_TRUE:
+        case TK_FALSE:
+            lit(parser);
+            break;
+    }
+
 }
 
 AST* number(Parser* parser);
@@ -405,15 +450,15 @@ AST* int_declare(Parser* parser) {
 
     parser_eat(parser, TK_IDENTIFIER); // count id
 
-    if (parser->current_token->type == TK_LPAREN) {
-        return int_func_declare(parser);
-    } else if (parser->current_token->type == TK_ASSIGN) {
+    if (parser->current_token->type == TK_ASSIGN) {
         return int_init_declare(parser);
     } else {
+        
         AST* int_var = init_ast(AST_VAR_DEF);
         int_var->var_def_type = TK_INT;
         int_var->var_def_var_name = var_id;
-        int_var->var_def_val = (AST*)0;
+        int_var->var_def_val = (AST*)0; // No value
+
         return int_var;
     }
 }
@@ -426,15 +471,16 @@ AST* float_declare(Parser* parser) {
 
     parser_eat(parser, TK_IDENTIFIER); // portion id
 
-    if (parser->current_token->type == TK_LPAREN) {
-        return float_func_declare(parser);
-    } else if (parser->current_token->type == TK_ASSIGN) {
+    if (parser->current_token->type == TK_ASSIGN) {
         return float_init_declare(parser);
     } else {
+
+        
         AST* float_var = init_ast(AST_VAR_DEF);
         float_var->var_def_type = TK_FLOAT;
         float_var->var_def_var_name = var_id;
-        float_var->var_def_val = (AST*)0;
+        float_var->var_def_val = (AST*)0; // No value
+
         return float_var;
     }
 }
@@ -447,15 +493,15 @@ AST* double_declare(Parser* parser) {
 
     parser_eat(parser, TK_IDENTIFIER); // fraction id
 
-    if (parser->current_token->type == TK_LPAREN) {
-        return double_func_declare(parser);
-    } else if (parser->current_token->type == TK_ASSIGN) {
+    if (parser->current_token->type == TK_ASSIGN) {
         return double_init_declare(parser);
     } else {
+        
         AST* double_var = init_ast(AST_VAR_DEF);
         double_var->var_def_type = TK_DOUBLE;
         double_var->var_def_var_name = var_id;
-        double_var->var_def_val = (AST*)0;
+        double_var->var_def_val = (AST*)0; // No value
+
         return double_var;
     }
 }
@@ -464,20 +510,20 @@ AST* char_declare(Parser* parser) {
     parser_eat(parser, TK_CHAR); // glyph
 
     if (parser->current_token->type == TK_ASTERISK) {
-        parser_eat(parser, TK_CHAR); // glyph *
+        parser_eat(parser, TK_ASTERISK); // glyph *
 
         char* var_id = parser->current_token->lexeme;
         parser_eat(parser, TK_IDENTIFIER); // glyph* id
 
-        if (parser->current_token->type == TK_LPAREN) {
-            return string_func_declare(parser);
-        } else if (parser->current_token->type == TK_ASSIGN) {
+        if (parser->current_token->type == TK_ASSIGN) {
             return string_init_declare(parser);
         } else {
+            
             AST* string_var = init_ast(AST_VAR_DEF);
             string_var->var_def_type = TK_CHAR;
             string_var->var_def_var_name = var_id;
-            string_var->var_def_val = (AST*)0;
+            string_var->var_def_val = (AST*)0; // No value
+
             return string_var;
         }
     } else {
@@ -486,15 +532,15 @@ AST* char_declare(Parser* parser) {
 
         parser_eat(parser, TK_IDENTIFIER); // glyph id
 
-        if (parser->current_token->type == TK_LPAREN) {
-            return char_func_declare(parser);
-        } else if (parser->current_token->type == TK_ASSIGN) {
+        if (parser->current_token->type == TK_ASSIGN) {
             return char_init_declare(parser);
         } else {
+            
             AST* char_var = init_ast(AST_VAR_DEF);
             char_var->var_def_type = TK_CHAR;
             char_var->var_def_var_name = var_id;
-            char_var->var_def_val = (AST*)0;
+            char_var->var_def_val = (AST*)0; // No value
+
             return char_var;
         }
     }
@@ -509,15 +555,15 @@ AST* bool_declare(Parser* parser) {
 
     parser_eat(parser, TK_IDENTIFIER); // verdict id
 
-    if (parser->current_token->type == TK_LPAREN) {
-        return bool_func_declare(parser);
-    } else if (parser->current_token->type == TK_ASSIGN) {
+    if (parser->current_token->type == TK_ASSIGN) {
         return bool_init_declare(parser);
     } else {
+        
         AST* bool_var = init_ast(AST_VAR_DEF);
         bool_var->var_def_type = TK_DOUBLE;
         bool_var->var_def_var_name = var_id;
-        bool_var->var_def_val = (AST*)0;
+        bool_var->var_def_val = (AST*)0; // No value
+
         return bool_var;
     }
 }
@@ -533,7 +579,7 @@ AST* int_init_declare(Parser* parser) {
     AST* int_var = init_ast(AST_VAR_DEF);
     int_var->var_def_type = TK_INT;
     int_var->var_def_var_name = var_id;
-    int_var->var_def_val = (AST*)0;
+    int_var->var_def_val = int_var_def_value;
     return int_var;
 }
 
@@ -543,10 +589,12 @@ AST* float_init_declare(Parser* parser) {
 
     parser_eat(parser, TK_ASSIGN);
 
+    AST* float_var_dev_value = primary_expr(parser);
+
     AST* float_var = init_ast(AST_VAR_DEF);
     float_var->var_def_type = TK_FLOAT;
     float_var->var_def_var_name = var_id;
-    float_var->var_def_val = (AST*)0;
+    float_var->var_def_val = float_var_dev_value;
     return float_var;
 }
 
@@ -556,30 +604,197 @@ AST* double_init_declare(Parser* parser) {
 
     parser_eat(parser, TK_ASSIGN);
 
+    AST* double_var_dev_value = primary_expr(parser);
+
     AST* double_var = init_ast(AST_VAR_DEF);
     double_var->var_def_type = TK_DOUBLE;
     double_var->var_def_var_name = var_id;
-    double_var->var_def_val = (AST*)0;
+    double_var->var_def_val = double_var_dev_value;
     return double_var;
 }
-AST* char_init_declare(Parser* parser);
-AST* string_init_declare(Parser* parser);
-AST* bool_init_declare(Parser* parser);
-AST* int_func_declare(Parser* parser);
-AST* float_func_declare(Parser* parser);
-AST* double_func_declare(Parser* parser);
-AST* char_func_declare(Parser* parser);
-AST* string_func_declare(Parser* parser);
-AST* bool_func_declare(Parser* parser);
-AST* lit(Parser* parser);
-AST* int_lit(Parser* parser);
-AST* float_lit(Parser* parser);
-AST* double_lit(Parser* parser);
-AST* char_lit(Parser* parser);
-AST* string_lit(Parser* parser);
-AST* bool_lit(Parser* parser);
-AST* type(Parser* parser);
-AST* id_list(Parser* parser);
+
+AST* char_init_declare(Parser* parser) {
+
+    char* var_id = parser->prev_token->lexeme;
+
+    parser_eat(parser, TK_ASSIGN);
+
+    AST* char_var_dev_value = primary_expr(parser);
+
+    AST* char_var = init_ast(AST_VAR_DEF);
+    char_var->var_def_type = TK_DOUBLE;
+    char_var->var_def_var_name = var_id;
+    char_var->var_def_val = char_var_dev_value;
+    return char_var;
+
+
+}
+AST* string_init_declare(Parser* parser) {
+
+    char* var_id = parser->prev_token->lexeme;
+
+    parser_eat(parser, TK_ASSIGN);
+
+    AST* string_var_dev_value = primary_expr(parser);
+
+    AST* string_var = init_ast(AST_VAR_DEF);
+    string_var->var_def_type = TK_STRINGLIT;
+    string_var->var_def_var_name = var_id;
+    string_var->var_def_val = string_var_dev_value;
+    return string_var;
+
+}
+AST* bool_init_declare(Parser* parser) {
+
+    char* var_id = parser->prev_token->lexeme;
+
+    parser_eat(parser, TK_ASSIGN);
+
+    AST* bool_var_dev_value = primary_expr(parser);
+
+    AST* bool_var = init_ast(AST_VAR_DEF);
+    bool_var->var_def_type = TK_STRINGLIT;
+    bool_var->var_def_var_name = var_id;
+    bool_var->var_def_val = bool_var_dev_value;
+    return bool_var;
+
+}
+AST* int_func_declare(Parser* parser) {
+    printf("SUCCESS\n");
+
+}
+AST* float_func_declare(Parser* parser) {
+
+}
+AST* double_func_declare(Parser* parser) {
+
+}
+AST* char_func_declare(Parser* parser) {
+
+}
+AST* string_func_declare(Parser* parser) {
+
+}
+AST* bool_func_declare(Parser* parser) {
+    
+}
+
+AST* lit(Parser* parser) {
+    switch (parser->current_token->type) {
+        case TK_INTLIT:
+            int_lit(parser);
+            break;
+        case TK_FLTLIT:
+            float_lit(parser);
+            break;
+        case TK_CHARACLIT:
+            char_lit(parser);
+            break;
+        case TK_STRINGLIT:
+            string_lit(parser);
+            break;
+        case TK_TRUE:
+        case TK_FALSE:
+            bool_lit(parser);
+            break;
+    }
+
+}
+
+AST* int_lit(Parser* parser) {
+
+    AST* ast_int_val = init_ast(AST_INT);
+
+    ast_int_val->int_val = atoi(parser->current_token->lexeme);
+
+    printf("LIT: %s\n", parser->current_token->lexeme);
+
+    parser_eat(parser, TK_INTLIT);
+
+    return ast_int_val;
+
+}
+AST* float_lit(Parser* parser) {
+
+    AST* ast_float_val = init_ast(AST_FLOAT);
+
+    ast_float_val->float_val = atof(parser->current_token->lexeme);
+
+    printf("LIT: %s\n", parser->current_token->lexeme);
+
+    parser_eat(parser, TK_FLTLIT);
+
+    return ast_float_val;
+
+}
+AST* double_lit(Parser* parser) {
+
+    AST* ast_double_val = init_ast(AST_DOUBLE);
+
+    ast_double_val->float_val = atof(parser->current_token->lexeme);
+
+    printf("LIT: %s\n", parser->current_token->lexeme);
+
+    parser_eat(parser, TK_FLTLIT);
+
+    return ast_double_val;
+
+}
+AST* char_lit(Parser* parser) {
+
+    AST* ast_char_val = init_ast(AST_CHAR);
+
+    ast_char_val->char_val = parser->current_token->lexeme[0];
+
+    printf("LIT: %s\n", parser->current_token->lexeme);
+
+    parser_eat(parser, TK_CHARACLIT);
+
+    return ast_char_val;
+
+}
+AST* string_lit(Parser* parser) {
+
+    AST* ast_string_val = init_ast(AST_STRING);
+
+    ast_string_val->string_val = parser->current_token->lexeme;
+
+    printf("LIT: %s\n", parser->current_token->lexeme);
+
+    parser_eat(parser, TK_STRINGLIT);
+
+    return ast_string_val;
+
+}
+AST* bool_lit(Parser* parser) {
+
+    AST* ast_bool_val = init_ast(AST_BOOL);
+
+    printf("LIT: %s\n", parser->current_token->lexeme);
+
+    switch (parser->current_token->type) {
+        case TK_TRUE:
+            ast_bool_val->bool_val = 1;
+            parser_eat(parser, TK_TRUE);
+            break;
+        case TK_FALSE:
+            ast_bool_val->bool_val = 0;
+            parser_eat(parser, TK_FALSE);
+            break;
+        default:
+            printf("Unknown token\n");
+            break;
+    }
+
+    return ast_bool_val;
+
+}
+AST* type(Parser* parser) {
+
+}
+AST* id_list(Parser* parser) {
+
+}
 
 AST* id(Parser* parser) {
     AST* var_id = (AST*)malloc(sizeof(AST));
