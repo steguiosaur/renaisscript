@@ -24,6 +24,8 @@ typedef struct ASTStruct {
         AST_ASSIGN_UNARY,   // 12
 
         AST_COMPOUND,       // 13
+
+		AST_NOOP,			// 14
 	} type;
 
 	// AST_VAR_DEF
@@ -64,15 +66,12 @@ typedef struct ASTStruct {
 
     // AST_EXPR
     struct ASTStruct** exprs;
+	size_t exprs_size;
 
     // AST_ASSIGN
     // AST_ASSIGN_UNARY
-    int assign_id;
-    int assign_op;
-    int assign_int_val;
-    float assign_float_val;
-    double assign_double_val;
-
+    char* assign_id;
+    TokenType assign_op;
 
     // AST_COMPOUND
     struct ASTStruct** compound_val;

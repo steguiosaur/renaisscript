@@ -1,0 +1,203 @@
+#include "parser.h"
+#include "AST.h"
+#include "tokens.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+Parser* initParser(Lexer* lexer) {
+	Parser* parser = (Parser*)malloc(sizeof(Parser));
+	parser->lexer = lexer;
+	parser->current_token = lexerGetNextToken(lexer);
+	parser->prev_token = parser->current_token;
+
+
+	return parser;
+
+}
+
+void parser_eat(Parser* parser, int token_type) {
+	if (parser->current_token->type == token_type) {
+
+		// printf("Eating: %s | Type: %s\n", parser->current_token->lexeme, tk_map[parser->current_token->type]);
+
+		parser->prev_token = parser->current_token;
+		parser->current_token = lexerGetNextToken(parser->lexer);
+
+	}
+	else {
+
+		printf(
+			"Unexpected Token: \"%s\", with type \"%s\" when needing \"%s\"\n",
+			parser->current_token->lexeme,
+			tk_map[parser->current_token->type],
+			tk_map[token_type]
+
+		);
+
+		// Immediately exit the program
+		exit(1);
+	}
+}
+
+AST* parser_parse(Parser* parser) {
+	return root(parser);
+}
+
+AST* root(Parser* parser) {
+
+	AST* compound = init_ast(AST_COMPOUND);
+	compound->compound_val = (AST**)malloc(sizeof(AST*));
+
+	AST* ast_statement = stmt(parser);
+	compound->compound_val[0] = ast_statement;
+	compound->compound_size += 1;
+
+	while (parser->current_token->type == TK_SEMICOLON) {
+
+		parser_eat(parser, TK_SEMICOLON);
+
+		AST* ast_statement = stmt(parser);
+		compound->compound_size += 1;
+		compound->compound_val = realloc(
+			compound->compound_val,
+			compound->compound_size * sizeof(AST*)
+		);
+		compound->compound_val[compound->compound_size - 1] = ast_statement;
+	}
+
+	return compound;
+}
+
+AST* stmt(Parser* parser) {
+	switch (parser->current_token->type) {
+
+		// Declarations
+	case TK_INT:
+	case TK_FLOAT:
+	case TK_DOUBLE:
+	case TK_CHAR:
+	case TK_BOOL:
+		return declarations(parser);
+		break;
+
+		// Statement Groups
+	case TK_IN:
+	case TK_OUT:
+	case TK_IDENTIFIER:
+	case TK_IF:
+	case TK_FOR:
+	case TK_WHILE:
+	case TK_RETURN:
+	case TK_GOTO:
+		return stmt_group(parser);
+		break;
+
+		// Functions
+	case TK_FUNCTION:
+		return func_declaration(parser);
+	}
+}
+
+AST* declarations(Parser* parser) {
+	switch (parser->current_token->type) {
+		case TK_INT:
+		case TK_FLOAT:
+		case TK_DOUBLE:
+		case TK_CHAR:
+		case TK_BOOL:
+			return var_stmt(parser);
+			break;
+	}
+}
+AST* stmt_group(Parser* parser) {}
+AST* input_stmt(Parser* parser) {}
+AST* output_stmt(Parser* parser) {}
+AST* assignment_stmt(Parser* parser) {}
+AST* conditional_stmt(Parser* parser) {}
+AST* condition(Parser* parser) {}
+AST* iterative_stmt(Parser* parser) {}
+AST* for_stmt(Parser* parser) {}
+AST* while_stmt(Parser* parser) {}
+AST* expr_stmt(Parser* parser) {}
+AST* return_stmt(Parser* parser) {}
+AST* goto_stmt(Parser* parser) {}
+AST* func_callback(Parser* parser) {}
+AST* func_declaration(Parser* parser) {}
+AST* compound_stmt(Parser* parser) {}
+AST* var_dec_stmt(Parser* parser) {}
+AST* var_init_stmt(Parser* parser) {}
+AST* var_stmt(Parser* parser) {
+	switch (parser->current_token->type) {
+		case TK_INT:
+			return int_declare(parser);
+			break;
+		case TK_FLOAT:
+			return float_declare(parser);
+			break;
+		case TK_DOUBLE:
+			return double_declare(parser);
+			break;
+		case TK_CHAR:
+			return char_declare(parser);
+			break;
+		case TK_BOOL:
+			return bool_declare(parser);
+			break;
+	}
+}
+AST* expr(Parser* parser) {
+	term(parser);
+}
+AST* term(Parser* parser) {
+	factor(parser);
+}
+AST* factor(Parser* parser) {
+	expo(parser);
+}
+AST* expo(Parser* parser) {
+	primary_expr(parser);
+}
+AST* primary_expr(Parser* parser) {
+
+}
+AST* number(Parser* parser) {
+
+}
+AST* relational_expr(Parser* parser) {}
+AST* logical_expr(Parser* parser) {}
+AST* int_declare(Parser* parser) {}
+AST* float_declare(Parser* parser) {}
+AST* double_declare(Parser* parser) {}
+AST* char_declare(Parser* parser) {}
+AST* string_declare(Parser* parser) {}
+AST* bool_declare(Parser* parser) {}
+AST* int_init_declare(Parser* parser) {}
+AST* float_init_declare(Parser* parser) {}
+AST* double_init_declare(Parser* parser) {}
+AST* char_init_declare(Parser* parser) {}
+AST* string_init_declare(Parser* parser) {}
+AST* bool_init_declare(Parser* parser) {}
+AST* int_func_declare(Parser* parser) {}
+AST* float_func_declare(Parser* parser) {}
+AST* double_func_declare(Parser* parser) {}
+AST* char_func_declare(Parser* parser) {}
+AST* string_func_declare(Parser* parser) {}
+AST* bool_func_declare(Parser* parser) {}
+AST* lit(Parser* parser) {}
+AST* int_lit(Parser* parser) {}
+AST* float_lit(Parser* parser) {}
+AST* double_lit(Parser* parser) {}
+AST* char_lit(Parser* parser) {}
+AST* string_lit(Parser* parser) {}
+AST* bool_lit(Parser* parser) {}
+AST* type(Parser* parser) {}
+AST* id_list(Parser* parser) {}
+AST* id(Parser* parser) {}
+AST* digit(Parser* parser) {}
+AST* ALPHASCRIPT(Parser* parser) {}
+AST* UPPERSCRIPT(Parser* parser) {}
+AST* LOWERSCRIPT(Parser* parser) {}
+AST* NUMERALS(Parser* parser) {}
+AST* SYMBOLS(Parser* parser) {}

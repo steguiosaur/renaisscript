@@ -1,0 +1,22 @@
+heareth(x);
+
+sayeth("string");
+sayeth(123);
+sayeth(x);
+
+x = 123;
+x = y;
+x = 10 + 10 + 10;
+
+ditto (count i = 0; i < 5; i++) {}
+rehearse (x > 5) {}
+
+if (x > 5) {}
+
+count a = 123;
+portion b = 3.14;
+fraction c = 5.12;
+glyph d = 'a';
+glyph* e = "Hello World";
+verdict f = yay;
+verdict g = nay;

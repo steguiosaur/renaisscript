@@ -2,8 +2,9 @@
 #include "lexer.h"    // lexical analyzer and tokens
 #include "parser.h"    // syntax analyzer and parser
 #include "optflags.h" // char *inputfile, *outputfile
+#include "visitor.h" // visitor
 
-#include "tokens.h" // 
+#include "tokens.h" // tokentypes
 
 #include <stdio.h>
 
@@ -36,10 +37,19 @@ int main(const int argc, char **argv) {
     Parser* parser = initParser(lexer);
     AST* head = parser_parse(parser);
 
-    printf("\nAST Type: %d\n", head->type);
-    printf("Number of Lines (Compound): %lu\n", head->compound_size);
+    // visitor_visit(head);
+    /* visitor_visit(head); */
 
-    /* outputAST(head); */
+    // printf("\nAST Type: %d\n", head->type);
+    printf("Number of Statements (Compound): %lu\n", head->compound_size);
+
+    // outputAST(head);
+
+	// printf("%s\n", parser->current_token->lexeme);
+	// parser->current_token = lexerGetNextToken(parser->lexer);
+	// printf("%s\n", parser->current_token->lexeme);
+	// parser->current_token = lexerGetPrevToken(parser->lexer);
+	// printf("%s\n", parser->current_token->lexeme);
 
 
     if (return_error) {
