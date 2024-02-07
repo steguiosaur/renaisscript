@@ -11,7 +11,9 @@ x = 10 + 10 + 10;
 ditto (count i = 0; i < 5; i++) {}
 rehearse (x > 5) {}
 
-if (x > 5) {}
+if (x > 5) {
+	count x = 5;
+}
 
 count a = 123;
 portion b = 3.14;

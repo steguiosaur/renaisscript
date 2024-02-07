@@ -30,27 +30,17 @@ int main(const int argc, char **argv) {
     }
 
     // process inputfile's characters
-    // Lexer* lexer = startLexer(file_contents, return_error);
-    // Parser* parser = startParser(lexer, return_error);
-
     Lexer* lexer = initLexer(file_contents);
     Parser* parser = initParser(lexer);
     AST* head = parser_parse(parser);
 
-    // visitor_visit(head);
-    /* visitor_visit(head); */
-
-    // printf("\nAST Type: %d\n", head->type);
-    printf("Number of Statements (Compound): %lu\n", head->compound_size);
-
-    // outputAST(head);
 
 	// printf("%s\n", parser->current_token->lexeme);
 	// parser->current_token = lexerGetNextToken(parser->lexer);
 	// printf("%s\n", parser->current_token->lexeme);
-	// parser->current_token = lexerGetPrevToken(parser->lexer);
-	// printf("%s\n", parser->current_token->lexeme);
 
+
+    printf("Number of Statements (Compound): %lu\n", head->compound_size);
 
     if (return_error) {
         return 1;

@@ -83,6 +83,7 @@ AST* root(Parser* parser) {
 
 	}
 	
+	// Starting point
 	AST* ast_statement = stmt(parser);
 	compound->compound_val[0] = ast_statement;
 	compound->compound_size += 1;
@@ -114,11 +115,11 @@ AST* root(Parser* parser) {
 		}
 
 		if (parser->current_token->type == TK_EOF) {
-			return;
+			return compound;
 		}
 
 		// Use this to separate lines
-		// printf("------------\n");
+		printf("------------\n");
 
         AST* ast_statement = stmt(parser);
 

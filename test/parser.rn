@@ -1,9 +1,9 @@
-count a = 1 + 5;
-count a = a + 2;
-count a = b + c;
-count a += 1;
-count a += b;
-count a += 1.2;
+a = 1 + 5;
+a = a + 2;
+a = b + c;
+a += 1;
+a += b;
+a += 1.2;
 
 b = 1 - 1;
 b = b - 1;
